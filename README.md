@@ -20,3 +20,7 @@
 
 - Go to http://localhost:8080/hello/
 - Should display "Hello World"
+
+5. Unit tests
+
+-test are automaticly run by a ci workflow, merging is blocked until you pass them 
