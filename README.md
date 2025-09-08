@@ -22,5 +22,4 @@
 - Should display "Hello World"
 
 5. Unit tests
-
--test are automaticly run by a ci workflow, merging is blocked until you pass them 
+- test are automaticly run by a ci workflow, do not merge until you pass them 
