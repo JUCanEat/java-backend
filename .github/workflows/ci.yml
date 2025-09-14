@@ -32,3 +32,9 @@ jobs:
 
     - name: Run tests
       run: ./mvnw -q test
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+          username: ${{ secrets.DOCKER_ID }}
+          password: ${{ secrets.DOCKER_PAT }}
