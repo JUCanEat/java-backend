@@ -43,26 +43,21 @@ jobs:
           username: ${{ vars.DOCKER_ID }}
           password: ${{ secrets.DOCKER_PAT }}
 
-    - name: Set image tags
-      id: tags
+    - name: Set image tag
+      id: tag
       run: |
+        SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+        CLEAN_BRANCH=$(echo "${{ github.ref_name }}" | sed 's/[^a-zA-Z0-9]/-/g' | cut -c1-20)
         if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-        echo "tags=${{ env.DOCKER_IMAGE }}:latest,${{ env.DOCKER_IMAGE }}:${{ github.sha }}" >> $GITHUB_OUTPUT
+          echo "tags=${{ env.DOCKER_IMAGE }}:latest" >> $GITHUB_OUTPUT
         else
-        echo "tags=${{ env.DOCKER_IMAGE }}:${{ github.ref_name }}-${{ github.sha }}" >> $GITHUB_OUTPUT
+          echo "tags=${{ env.DOCKER_IMAGE }}:${CLEAN_BRANCH}-${SHORT_SHA}" >> $GITHUB_OUTPUT
         fi
 
     - name: Build and push Docker image
       run: |
         mvn spring-boot:build-image \
-          -Dspring-boot.build-image.imageName=${{ env.DOCKER_IMAGE }}:temp \
+          -Dspring-boot.build-image.imageName=${{ steps.tag.outputs.tag }} \
           -Dspring-boot.build-image.builder=gcr.io/buildpacks/builder:v1 \
-          -Dspring-boot.build-image.env.BP_JVM_VERSION=21
-        
-        IFS=',' read -ra TAG_ARRAY <<< "${{ steps.tags.outputs.tags }}"
-        for tag in "${TAG_ARRAY[@]}"; do
-          docker tag ${{ env.DOCKER_IMAGE }}:temp $tag
-          docker push $tag
-        done
-        
-        docker rmi ${{ env.DOCKER_IMAGE }}:temp
+          -Dspring-boot.build-image.env.BP_JVM_VERSION=21 \
+          -Dspring-boot.build-image.publish=true
