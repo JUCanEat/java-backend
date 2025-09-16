@@ -22,4 +22,8 @@
 - Should display "Hello World"
 
 5. Unit tests
-- test are automaticly run by a ci workflow, do not merge until you pass them 
+- test are automaticly run by a ci workflow, do not merge until you pass them
+
+6. Docker
+- On merge to main docker image is build and pushed to dockerhub with latest tag
+- See https://hub.docker.com/repository/docker/haniazipser2004/awesome-amazing-project/general
