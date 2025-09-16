@@ -44,7 +44,7 @@ jobs:
           password: ${{ secrets.DOCKER_PAT }}
 
     - name: Set image tag
-      id: tag
+      id: tags
       run: |
         SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
         CLEAN_BRANCH=$(echo "${{ github.ref_name }}" | sed 's/[^a-zA-Z0-9]/-/g' | cut -c1-20)
@@ -57,7 +57,8 @@ jobs:
     - name: Build and push Docker image
       run: |
         mvn spring-boot:build-image \
-          -Dspring-boot.build-image.imageName=${{ steps.tag.outputs.tag }} \
+          -Dspring-boot.build-image.imageName=${{ steps.tags.outputs.tags }} \
           -Dspring-boot.build-image.builder=gcr.io/buildpacks/builder:v1 \
-          -Dspring-boot.build-image.env.BP_JVM_VERSION=21 \
-          -Dspring-boot.build-image.publish=true
+          -Dspring-boot.build-image.env.BP_JVM_VERSION=21
+        
+        docker push ${{ steps.tags.outputs.tags }}
