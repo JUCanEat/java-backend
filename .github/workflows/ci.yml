@@ -7,6 +7,7 @@ on:
 
 jobs:
   build:
+    environment: dev
     runs-on: ubuntu-latest
 
     steps:
@@ -32,3 +33,9 @@ jobs:
 
     - name: Run tests
       run: ./mvnw -q test
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+          username: ${{ vars.DOCKER_ID }}
+          password: ${{ secrets.DOCKER_PAT }}
