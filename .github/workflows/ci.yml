@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   pull_request:
 
+env:
+  DOCKER_IMAGE: haniazipser2004/awesome-amazing-project
+
 jobs:
   build:
     environment: dev
@@ -34,8 +37,32 @@ jobs:
     - name: Run tests
       run: ./mvnw -q test
 
-    - name: Log in to Docker Hub
+    - name: Log in to Docker
       uses: docker/login-action@v2
       with:
           username: ${{ vars.DOCKER_ID }}
           password: ${{ secrets.DOCKER_PAT }}
+
+    - name: Set image tags
+      id: tags
+      run: |
+        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+        echo "tags=${{ env.DOCKER_IMAGE }}:latest,${{ env.DOCKER_IMAGE }}:${{ github.sha }}" >> $GITHUB_OUTPUT
+        else
+        echo "tags=${{ env.DOCKER_IMAGE }}:${{ github.ref_name }}-${{ github.sha }}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Build and push Docker image
+      run: |
+        mvn spring-boot:build-image \
+          -Dspring-boot.build-image.imageName=${{ env.DOCKER_IMAGE }}:temp \
+          -Dspring-boot.build-image.builder=gcr.io/buildpacks/builder:v1 \
+          -Dspring-boot.build-image.env.BP_JVM_VERSION=21
+        
+        IFS=',' read -ra TAG_ARRAY <<< "${{ steps.tags.outputs.tags }}"
+        for tag in "${TAG_ARRAY[@]}"; do
+          docker tag ${{ env.DOCKER_IMAGE }}:temp $tag
+          docker push $tag
+        done
+        
+        docker rmi ${{ env.DOCKER_IMAGE }}:temp
