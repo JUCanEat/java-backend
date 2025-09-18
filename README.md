@@ -27,3 +27,5 @@
 6. Docker
 - On merge to main docker image is build and pushed to dockerhub with latest tag
 - See https://hub.docker.com/repository/docker/haniazipser2004/awesome-amazing-project/general
+- docker pull haniazipser2004/awesome-amazing-project:latest
+- docker run -p 8080:8080 haniazipser2004/awesome-amazing-project:latest (or different port mapping if 8080 is in use)
