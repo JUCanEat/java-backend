@@ -61,8 +61,5 @@ jobs:
       run: |
         mvn spring-boot:build-image \
           -Dspring-boot.build-image.imageName=${{ steps.tags.outputs.tags }} \
-          -Dspring-boot.build-image.builder=gcr.io/buildpacks/builder:v1 \
-          -Dspring-boot.build-image.env.BP_JVM_VERSION=21 \
-          -Dspring-boot.build-image.env.GOOGLE_RUNTIME_VERSION=21
         
         docker push ${{ steps.tags.outputs.tags }}
