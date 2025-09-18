@@ -3,6 +3,9 @@ name: Java Maven CI
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'pom.xml'
   pull_request:
 
 env:
