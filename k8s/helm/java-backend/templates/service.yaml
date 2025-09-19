@@ -11,5 +11,6 @@ spec:
       targetPort: {{ .Values.service.targetPort }}
       protocol: TCP
       name: http
+      nodePort: 30007
   selector:
     {{- include "java-backend.selectorLabels" . | nindent 4 }}
