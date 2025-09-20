@@ -2,6 +2,7 @@ package com.backend.controllers;
 
 import com.backend.model.ExampleClass;
 import com.backend.services.ExampleService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +24,10 @@ public class ExampleController {
         return "Hello world";
     }
 
+    @Operation(
+            summary = "Get all examples",
+            description = "Retrieves a list of all example objects"
+    )
     @GetMapping("/example")
     public List<ExampleClass> exampleEndpoint(){
         return exampleService.getAll();
