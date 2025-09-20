@@ -32,3 +32,4 @@
 
 7. Documentation
 - Documentation is generated under http://localhost:8080/swagger-ui/index.html
+- To add custom descrtptions see example controller
