@@ -1,0 +1,1 @@
+INSERT INTO example (examle_id, example_field)values ('a1111111-2222-4333-8444-555555555555', 'example')
