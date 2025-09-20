@@ -29,3 +29,6 @@
 - See https://hub.docker.com/repository/docker/haniazipser2004/awesome-amazing-project/general
 - docker pull haniazipser2004/awesome-amazing-project:latest
 - docker run -p 8080:8080 haniazipser2004/awesome-amazing-project:latest (or different port mapping if 8080 is in use)
+
+7. Documentation
+- Documentation is generated under http://localhost:8080/swagger-ui/index.html
