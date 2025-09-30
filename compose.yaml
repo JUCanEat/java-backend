@@ -1,0 +1,19 @@
+
+version: '3.8'
+
+services:
+  java-backend:
+    image: haniazipser2004/awesome-amazing-project:latest
+    ports:
+      - "8080:8080"
+    pull_policy: always
+    depends_on:
+      - python-microservice
+    environment:
+      - SPRING_PROFILES_ACTIVE=compose
+
+  python-microservice:
+    image: haniazipser2004/awesome-amazing-project:python-latest
+    ports:
+      - "8000:8000"
+    pull_policy: always
