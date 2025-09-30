@@ -30,6 +30,14 @@
 - docker pull haniazipser2004/awesome-amazing-project:latest
 - docker run -p 8080:8080 haniazipser2004/awesome-amazing-project:latest (or different port mapping if 8080 is in use)
 
+7. Docker compose
+  If you want to run whole backend (java + python + keycloak):
+- clone this repo
+- run compose.yaml
+- Java backend -> http://localhost:8080
+- Keycloak -> http://localhost:8081
+- Python microservice -> http://localhost:8000
+
 7. Documentation
 - Documentation is generated under http://localhost:8080/swagger-ui/index.html
 - To add custom descrtptions see example controller
