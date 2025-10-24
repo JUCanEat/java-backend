@@ -1,12 +1,9 @@
 package com.backend.model.Entities;
 
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.*;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,12 +12,22 @@ import lombok.Setter;
 @Setter
 @Entity
 @NoArgsConstructor
-@Table(name = "\"user\"")
+@Table(name = "keycloak_user")
 public class User {
     @Id
-    @GeneratedValue
     private UUID id;
+
     private String email;
-    @OneToOne
-    private Favourites favourites;
+    private String username;
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_favorite_restaurants",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "restaurant_id")
+    )
+    private Set<Restaurant> favoriteRestaurants = new HashSet<>();
+
+    private LocalDateTime createdAt;
+    private LocalDateTime lastLoginAt;
 }

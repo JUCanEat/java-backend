@@ -1,17 +1,14 @@
 package com.backend.model.Entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
+import com.backend.model.Price;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -22,15 +19,26 @@ import java.util.UUID;
 @Table(name = "dish")
 public class Dish {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     private String name;
     @Enumerated(EnumType.STRING)
     private Category category;
-    private BigDecimal price;
+    @Embedded
+    private Price price;
 
+
+    @ElementCollection(targetClass = Allergens.class)
     @Enumerated(EnumType.STRING)
+    @CollectionTable(name = "dish_allergens")
+    @Column(name = "allergen")
     private Set<Allergens> allergens;
+
+    @ManyToOne
+    private Restaurant restaurant;
+
+    @ManyToMany(mappedBy = "dishes")
+    private List<DailyMenu> dailyMenus = new ArrayList<>();
 
     private enum Category {
         SOUP,
@@ -42,12 +50,5 @@ public class Dish {
         GLUTEN,
         MEAT,
         LACTOSE
-    }
-
-    @PreUpdate
-    private void validatePrice () {
-        if (price != null && price.signum() <= 0) {
-            throw new IllegalArgumentException("Price cannot be negative");
-        }
     }
 }
