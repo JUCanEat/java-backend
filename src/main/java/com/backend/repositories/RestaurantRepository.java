@@ -1,6 +1,6 @@
 package com.backend.repositories;
 
-import com.backend.model.Entities.Restaurant;
+import com.backend.model.entities.Restaurant;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

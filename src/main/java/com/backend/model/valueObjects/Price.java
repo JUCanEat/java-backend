@@ -1,4 +1,4 @@
-package com.backend.model;
+package com.backend.model.valueObjects;
 
 import jakarta.persistence.Embeddable;
 import lombok.Getter;

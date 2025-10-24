@@ -1,6 +1,6 @@
 package com.backend.repositories;
 
-import com.backend.model.Entities.Favourites;
+import com.backend.model.entities.Favourites;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,12 +1,11 @@
-package com.backend.model.Entities;
+package com.backend.model.entities;
 
-import com.backend.model.Price;
+import com.backend.model.valueObjects.Price;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;

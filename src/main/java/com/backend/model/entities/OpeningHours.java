@@ -1,4 +1,4 @@
-package com.backend.model.Entities;
+package com.backend.model.entities;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;

@@ -1,4 +1,4 @@
-package com.backend.model.Entities;
+package com.backend.model.entities;
 
 import jakarta.persistence.*;
 import lombok.Getter;
