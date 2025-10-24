@@ -1,12 +1,11 @@
 package com.backend.repositories;
 
-import java.util.UUID;
-
+import com.backend.model.Entities.Restaurant;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.backend.model.ExampleClass;
+import java.util.UUID;
 
 @Repository
-public interface ExampleRepository extends JpaRepository<ExampleClass, UUID> {
+public interface RestaurantRepository extends JpaRepository<Restaurant, UUID> {
 }
