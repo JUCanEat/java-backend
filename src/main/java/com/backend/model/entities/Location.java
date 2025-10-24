@@ -1,5 +1,7 @@
-package com.backend.model.Entities;
+package com.backend.model.entities;
 
+import com.backend.model.valueObjects.Latitude;
+import com.backend.model.valueObjects.Longitude;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,7 +16,9 @@ public class Location {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    private String coordinates;
-    // TODO: implementation details regarding pinpointing location on the map
+    @Embedded
+    private Latitude latitude;
+    @Embedded
+    private Longitude longitude;
 
 }
