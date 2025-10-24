@@ -12,7 +12,7 @@ import java.util.*;
 @Table(name = "restaurant")
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class Restaurant extends Facility {
-
+    private String name;
     @ElementCollection
     private List<OpeningHours> openingHours;
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
