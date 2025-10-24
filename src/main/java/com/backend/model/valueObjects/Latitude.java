@@ -1,5 +1,6 @@
 package com.backend.model.valueObjects;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Embeddable
 public class Latitude {
-
+	@Column(name = "latitude")
 	private Double value;
 
 	public Latitude(Double value) {
