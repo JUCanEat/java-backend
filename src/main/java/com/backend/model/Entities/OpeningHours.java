@@ -1,17 +1,10 @@
 package com.backend.model.Entities;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.UUID;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -22,33 +15,23 @@ import lombok.Setter;
 @Table(name = "opening_hours")
 public class OpeningHours {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Enumerated(EnumType.STRING)
-    private Day dayOfWeek;
-
-    private LocalTime startTime;
-
-    private LocalTime endTime;
-
     @ManyToOne
+    @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
 
-    private enum Day {
-        MONDAY,
-        TUESDAY,
-        WEDNESDAY,
-        THURSDAY,
-        FRIDAY,
-        SATURDAY,
-        SUNDAY
-    }
+    @Enumerated(EnumType.STRING)
+    private DayOfWeek dayOfWeek;
+
+    private LocalTime openTime;
+    private LocalTime closeTime;
 
     @PrePersist
     @PreUpdate
     private void validateTimeRange () {
-        if (startTime != null && endTime != null && !endTime.isAfter(startTime)) {
+        if (openTime != null && closeTime != null && !closeTime.isAfter(openTime)) {
             throw new IllegalArgumentException("End time must be later then start time");
         }
     }
