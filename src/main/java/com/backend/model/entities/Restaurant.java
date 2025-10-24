@@ -1,10 +1,10 @@
 package com.backend.model.entities;
 
+import java.util.*;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.*;
 
 @Getter
 @Setter
@@ -13,13 +13,13 @@ import java.util.*;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class Restaurant extends Facility {
 
-    @ElementCollection
-    private List<OpeningHours> openingHours;
-    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
-    private List<Dish> dishes = new ArrayList<>();
-    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
-    private List<DailyMenu> dailyMenus = new ArrayList<>();
-    @ManyToMany(mappedBy = "favoriteRestaurants")
-    private Set<User> favoritedByUsers = new HashSet<>();
+	@ElementCollection
+	private List<OpeningHours> openingHours;
+	@OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
+	private List<Dish> dishes = new ArrayList<>();
+	@OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
+	private List<DailyMenu> dailyMenus = new ArrayList<>();
+	@ManyToMany(mappedBy = "favoriteRestaurants")
+	private Set<User> favoritedByUsers = new HashSet<>();
 
 }

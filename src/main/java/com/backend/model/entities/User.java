@@ -14,20 +14,16 @@ import lombok.Setter;
 @NoArgsConstructor
 @Table(name = "keycloak_user")
 public class User {
-    @Id
-    private UUID id;
+	@Id
+	private UUID id;
 
-    private String email;
-    private String username;
+	private String email;
+	private String username;
 
-    @ManyToMany
-    @JoinTable(
-            name = "user_favorite_restaurants",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "restaurant_id")
-    )
-    private Set<Restaurant> favoriteRestaurants = new HashSet<>();
+	@ManyToMany
+	@JoinTable(name = "user_favorite_restaurants", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "restaurant_id"))
+	private Set<Restaurant> favoriteRestaurants = new HashSet<>();
 
-    private LocalDateTime createdAt;
-    private LocalDateTime lastLoginAt;
+	private LocalDateTime createdAt;
+	private LocalDateTime lastLoginAt;
 }
