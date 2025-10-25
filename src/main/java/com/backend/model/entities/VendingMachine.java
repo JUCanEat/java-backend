@@ -1,6 +1,11 @@
 package com.backend.model.entities;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,8 +19,6 @@ public class VendingMachine extends Facility {
     private Type type;
 
     private enum Type {
-        SNACKS,
-        COFFEE,
-        LUNCH
+        SNACKS, COFFEE, LUNCH
     }
 }
