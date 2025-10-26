@@ -29,10 +29,11 @@ public class RestaurantDetailsDTO {
         this.description = restaurant.getDescription();
         this.photoPath = restaurant.getPhotoPath();
         this.location = restaurant.getLocation();
-        this.openingHours = restaurant.getOpeningHours()
-                .stream()
+        this.openingHours = restaurant.getOpeningHours() != null ?
+                restaurant.getOpeningHours().stream()
                 .map(OpeningHoursDTO::new)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList())
+                :List.of();
         this.todayMenu = new DailyMenuDTO(restaurant.getTodayMenu());
     }
 
