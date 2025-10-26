@@ -51,11 +51,11 @@ public class Dish {
     @ManyToMany(mappedBy = "dishes")
     private List<DailyMenu> dailyMenus = new ArrayList<>();
 
-    private enum Category {
+    public enum Category {
         SOUP, MAIN_COURSE
     }
 
-    private enum Allergens {
+    public enum Allergens {
         NUTS, GLUTEN, MEAT, LACTOSE
     }
 }

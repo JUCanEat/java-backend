@@ -37,10 +37,15 @@ public class DailyMenu {
     @JoinTable(name = "daily_menu_dishes", joinColumns = @JoinColumn(name = "daily_menu_id"), inverseJoinColumns = @JoinColumn(name = "dish_id"))
     private List<Dish> dishes = new ArrayList<>();
     @ManyToOne
+    @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
 
 
-    private enum Status {
+    public enum Status {
         ACTIVE, INACTIVE
+    }
+
+    public boolean isActive(){
+        return status == Status.ACTIVE;
     }
 }

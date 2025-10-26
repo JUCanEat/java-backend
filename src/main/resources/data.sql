@@ -1,7 +1,7 @@
-INSERT INTO restaurant (id, description, photo_path, location_id)
+INSERT INTO restaurant (id, name, description, photo_path, location_id)
 VALUES
-    ('b2a5f4de-8f39-4e3e-a51e-8c527ce7e1a1', 'Cozy Italian restaurant serving pasta and pizza.', '/images/restaurants/bella_italia.jpg', NULL),
-    ('e7c37f89-26b1-4cb5-9b43-6e2c15a0d9a8', 'Modern sushi bar with fresh fish and minimalist decor.', '/images/restaurants/sakura_sushi.jpg', NULL);
+    ('b2a5f4de-8f39-4e3e-a51e-8c527ce7e1a1', 'La Bella Italia', 'Cozy Italian restaurant serving pasta and pizza.', '/images/restaurants/bella_italia.jpg', NULL),
+    ('e7c37f89-26b1-4cb5-9b43-6e2c15a0d9a8', 'Sakura Sushi', 'Modern sushi bar with fresh fish and minimalist decor.', '/images/restaurants/sakura_sushi.jpg', NULL);
 
 -- La Bella Italia
 INSERT INTO opening_hours (id, restaurant_id, day_of_week, open_time, close_time)
