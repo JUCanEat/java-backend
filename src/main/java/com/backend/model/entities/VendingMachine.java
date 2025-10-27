@@ -13,12 +13,11 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "vending_machine")
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class VendingMachine extends Facility {
     @Enumerated(EnumType.STRING)
     private Type type;
 
-    private enum Type {
+    public enum Type {
         SNACKS, COFFEE, LUNCH
     }
 }

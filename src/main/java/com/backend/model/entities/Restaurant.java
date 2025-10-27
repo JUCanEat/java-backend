@@ -8,6 +8,7 @@ import jakarta.persistence.InheritanceType;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,7 +25,6 @@ import java.util.Set;
 @Setter
 @Entity
 @Table(name = "restaurant")
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class Restaurant extends Facility {
     private String name;
     @OneToMany(mappedBy = "restaurant")
