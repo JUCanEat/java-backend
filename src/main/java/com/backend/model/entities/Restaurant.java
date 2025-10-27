@@ -8,9 +8,13 @@ import jakarta.persistence.InheritanceType;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -21,10 +25,9 @@ import java.util.Set;
 @Setter
 @Entity
 @Table(name = "restaurant")
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class Restaurant extends Facility {
     private String name;
-    @ElementCollection
+    @OneToMany(mappedBy = "restaurant")
     private List<OpeningHours> openingHours;
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
     private List<Dish> dishes = new ArrayList<>();
@@ -32,5 +35,31 @@ public class Restaurant extends Facility {
     private List<DailyMenu> dailyMenus = new ArrayList<>();
     @ManyToMany(mappedBy = "favoriteRestaurants")
     private Set<User> favoritedByUsers = new HashSet<>();
+
+    public boolean isOpen() {
+        LocalDateTime now = LocalDateTime.now();
+        DayOfWeek today = now.getDayOfWeek();
+        LocalTime currentTime = now.toLocalTime();
+
+        if (openingHours == null || openingHours.isEmpty()) {
+            return false;
+        }
+
+        return openingHours.stream()
+                .filter(oh -> oh.getDayOfWeek() == today)
+                .anyMatch(oh -> isWithinOpeningHours(currentTime, oh));
+    }
+
+    private boolean isWithinOpeningHours(LocalTime currentTime, OpeningHours hours) {
+        return !currentTime.isBefore(hours.getOpenTime())
+                && !currentTime.isAfter(hours.getCloseTime());
+    }
+
+    public DailyMenu getTodayMenu(){
+        return dailyMenus.stream()
+                    .filter(DailyMenu::isActive)
+                    .findFirst()
+                    .orElse(null);
+    }
 
 }
