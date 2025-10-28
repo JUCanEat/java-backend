@@ -63,7 +63,7 @@ public class RestaurantController {
 
     @Operation(
             summary = "Add daily menu for restaurant by ID",
-            description = "Retrieves detailed information about a specific restaurant, including location, opening hours, and today's menu."
+            description = "Ads new daily menu for the restaurant with given id."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved restaurant details"),
