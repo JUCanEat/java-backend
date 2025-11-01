@@ -1,12 +1,15 @@
 package com.backend.controllersTests;
 
-import com.backend.config.TestSecurityConfig;
 import com.backend.controllers.FacilityController;
+import com.backend.filters.SaveUserFilter;
 import com.backend.model.dtos.FacilityLocationDTO;
 import com.backend.services.FacilityService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -20,8 +23,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.hamcrest.Matchers.*;
 
-@WebMvcTest(FacilityController.class)
-@Import(TestSecurityConfig.class)
+@WebMvcTest(controllers = FacilityController.class,
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SaveUserFilter.class),
+        excludeAutoConfiguration = {
+                org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration.class
+        })
+@AutoConfigureMockMvc(addFilters = false)
 class FacilityControllerTest {
 
     @Autowired

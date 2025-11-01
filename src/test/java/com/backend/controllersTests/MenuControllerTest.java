@@ -1,13 +1,17 @@
 package com.backend.controllersTests;
 
-import com.backend.config.TestSecurityConfig;
 import com.backend.controllers.MenuController;
+import com.backend.filters.SaveUserFilter;
 import com.backend.model.dtos.DailyMenuDTO;
 import com.backend.model.entities.DailyMenu;
 import com.backend.model.entities.Restaurant;
 import com.backend.services.MenuService;
+import com.backend.services.SseEmitterService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -24,8 +28,14 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(MenuController.class)
-@Import(TestSecurityConfig.class)
+@WebMvcTest(controllers = MenuController.class,
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SaveUserFilter.class),
+        excludeAutoConfiguration = {
+                org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration.class
+        })
+@AutoConfigureMockMvc(addFilters = false)
 class MenuControllerTest {
 
     @Autowired
@@ -33,6 +43,8 @@ class MenuControllerTest {
 
     @MockitoBean
     private MenuService menuService;
+    @MockitoBean
+    private SseEmitterService sseEmitterService;
 
     @Test
     void shouldReturnDailyMenuWhenExists() throws Exception {
