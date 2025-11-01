@@ -22,15 +22,19 @@ import java.util.UUID;
 @Table(name = "keycloak_user")
 public class User {
     @Id
-    private UUID id;
+    private String id;
 
-    private String email;
-    private String username;
+    @ManyToMany(mappedBy = "owners")
+    private Set<Restaurant> ownedRestaurants = new HashSet<>();
+
+    //private String email; jeszcze nie wiem czy potrzebujemy to trzymać
+    //private String username;
+    //private LocalDateTime createdAt;
+    //private LocalDateTime lastLoginAt;
 
     @ManyToMany
     @JoinTable(name = "user_favorite_restaurants", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "restaurant_id"))
     private Set<Restaurant> favoriteRestaurants = new HashSet<>();
 
-    private LocalDateTime createdAt;
-    private LocalDateTime lastLoginAt;
+
 }

@@ -24,8 +24,12 @@ public class SecurityConfig {
             jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new KeycloakRoleConverter());
             http.cors(Customizer.withDefaults()).csrf(c -> c.disable())
                     .authorizeHttpRequests((a) -> a
-                                    //.requestMatchers(HttpMethod.POST, "/api/restaurants").hasRole("restaurant_owner")
-                                    //.anyRequest().authenticated()
+                                    .requestMatchers(HttpMethod.POST, "/api/restaurants").hasRole("restaurant_owner")
+                                    .requestMatchers(HttpMethod.PUT, "/api/restaurants/**").hasRole("restaurant_owner")
+                                    .requestMatchers(HttpMethod.GET, "/api/restaurants/**/draft").hasRole("restaurant_owner")
+                                    .requestMatchers(HttpMethod.GET, "/api/menus/events").hasRole("restaurant_owner")
+                                    .requestMatchers(HttpMethod.GET, "/api/users").permitAll() //DEBUG ONLY!
+                                   // .anyRequest().authenticated());
                                     .anyRequest().permitAll());
             http.oauth2ResourceServer(rsc -> rsc.jwt(jwtConfigurer ->
                     jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter)));

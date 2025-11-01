@@ -58,3 +58,14 @@ VALUES
     ('c3b6a5ef-9f40-5d4f-b62f-9d638df8f2b2', 'Snack vending machine with chips, cookies, and candy bars.', '/images/vending/snacks_01.jpg', '550e8400-e29b-41d4-a716-446655440003', 'SNACKS'),
     ('d4c7b6f0-0a51-6e5f-c73f-0e749ef9f3c3', 'Coffee machine with espresso, cappuccino, and hot chocolate.', '/images/vending/coffee_01.jpg', '550e8400-e29b-41d4-a716-446655440004', 'COFFEE'),
     ('e5d8c7f1-1b62-7f6f-d84f-1f850ff0f4d4', 'Lunch vending machine with sandwiches, salads, and wraps.', '/images/vending/lunch_01.jpg', '550e8400-e29b-41d4-a716-446655440005', 'LUNCH');
+
+INSERT INTO keycloak_user (id)
+VALUES (
+    'e8efd725-8397-4aea-979f-3c096470d23b'  -- To jest subject z JWT Keycloak koneicznie z rola owner!!
+);
+
+INSERT INTO restaurant_owners (restaurant_id, user_id)
+VALUES (
+    'b2a5f4de-8f39-4e3e-a51e-8c527ce7e1a1',  -- ID restauracji La Bella Italia
+    'e8efd725-8397-4aea-979f-3c096470d23b'  -- ID ownera z users
+);
