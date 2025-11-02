@@ -14,7 +14,8 @@ public class MessageDTO {
     private UUID id;
     private UUID restaurantId;
     private LocalDate date;
-    private String imagePath;
+    private byte[] imageData;
+    private String fileName;
     private String ownerId;
 
 }

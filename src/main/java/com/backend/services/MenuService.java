@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashSet;
@@ -37,7 +38,6 @@ import java.util.stream.Collectors;
 public class MenuService {
     private final DailyMenuRepository dailyMenuRepository;
     private final RestaurantRepository restaurantRepository;
-    private final FileStorageService fileStorageService;
     private final RabbitTemplate rabbitTemplate;
     private final DishRepository dishRepository;
     //private final MenuAIService menuAIService; //Musisz to alek napisać
@@ -82,14 +82,19 @@ public class MenuService {
         menu.setOriginalFileName(image.getOriginalFilename());
 
         DailyMenu saved = dailyMenuRepository.save(menu);
-
-        String imagePath = fileStorageService.storeTempMenuImage(image, saved.getId());
+        byte[] imageBytes;
+        try {
+            imageBytes= image.getBytes();
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error reading file: " + e.getMessage());
+        }
 
         MessageDTO message = new MessageDTO(
                 saved.getId(),
                 restaurantId,
                 today,
-                imagePath,
+                imageBytes,
+                image.getOriginalFilename(),
                 ownerId
         );
 
@@ -104,7 +109,7 @@ public class MenuService {
 
     public DailyMenuDTO getDailyMenuDraftByRestaurantId(UUID id) {
         Optional<DailyMenu> menu = dailyMenuRepository
-                .findByRestaurantIdAndStatus(id, DailyMenu.Status.PROCESSED);
+                .findByRestaurantIdAndStatus(id, DailyMenu.Status.DRAFT);
 
         return menu.map(DailyMenuDTO::new)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -115,15 +120,15 @@ public class MenuService {
 
     public void updateAndApproveMenu(UUID id, DailyMenuDTO request, String ownerId) {
         DailyMenu menu = dailyMenuRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Daily Menu not found for restaurant " + id));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Daily Menu not found for restaurant " + id));
 
         if (menu.getRestaurant().getOwners().stream().noneMatch(owner -> owner.getId().equals(ownerId))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "You are not the owner of this restaurant");
         }
 
-        if (menu.getStatus() != DailyMenu.Status.PROCESSED) {
-            throw new IllegalStateException("Menu not ready for approval");
+        if (menu.getStatus() != DailyMenu.Status.DRAFT) {
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Menu not ready for approval");
         }
 
         if (request.getDishes() != null && !request.getDishes().isEmpty()) {

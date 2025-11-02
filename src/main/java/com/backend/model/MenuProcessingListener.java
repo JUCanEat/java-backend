@@ -26,7 +26,6 @@ import java.util.Set;
 @Slf4j
 public class MenuProcessingListener {
     private final DailyMenuRepository dailyMenuRepository;
-    private final FileStorageService fileStorageService;
     private final DishRepository dishRepository;
     // private final ElasticsearchService elasticsearchService; // opcjonalnie
     private final SseEmitterService sseEmitterService;
@@ -42,7 +41,7 @@ public class MenuProcessingListener {
 
             //List<Dish> parsedItems = menuAIService.parseMenuFromImage(message.getImagePath());
             List<Dish> parsedItems = mockOcr();
-            log.info("Successfully processed image {} with {} items", message.getImagePath(), parsedItems.size());
+            log.info("Successfully processed image {} with {} items", message.getFileName(), parsedItems.size());
 
 
             if (parsedItems.isEmpty()) {
@@ -50,12 +49,10 @@ public class MenuProcessingListener {
             }
 
             menu.setDishes(parsedItems);
-            menu.setStatus(DailyMenu.Status.PROCESSED);
+            menu.setStatus(DailyMenu.Status.DRAFT);
             //menu.setProcessedAt(LocalDateTime.now()); do audit logów?
 
             dailyMenuRepository.save(menu);
-
-            fileStorageService.deleteTempFile(message.getImagePath());
 
             //EVENT DLA FRONTENDU!!!
             sseEmitterService.sendEvent(message.getOwnerId(), menu.getId());

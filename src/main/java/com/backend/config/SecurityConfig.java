@@ -3,6 +3,8 @@ package com.backend.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -16,9 +18,11 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
+
 public class SecurityConfig {
 
         @Bean
+        @Order(Ordered.HIGHEST_PRECEDENCE)
         SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
             JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
             jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new KeycloakRoleConverter());
@@ -26,7 +30,7 @@ public class SecurityConfig {
                     .authorizeHttpRequests((a) -> a
                                     .requestMatchers(HttpMethod.POST, "/api/restaurants").hasRole("restaurant_owner")
                                     .requestMatchers(HttpMethod.PUT, "/api/restaurants/**").hasRole("restaurant_owner")
-                                    .requestMatchers(HttpMethod.GET, "/api/restaurants/**/draft").hasRole("restaurant_owner")
+                                    .requestMatchers(HttpMethod.GET, "/api/restaurants/*/draft").hasRole("restaurant_owner")
                                     .requestMatchers(HttpMethod.GET, "/api/menus/events").hasRole("restaurant_owner")
                                     .requestMatchers(HttpMethod.GET, "/api/users").permitAll() //DEBUG ONLY!
                                    // .anyRequest().authenticated());
