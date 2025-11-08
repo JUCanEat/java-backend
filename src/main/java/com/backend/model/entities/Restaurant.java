@@ -5,6 +5,8 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -35,8 +37,13 @@ public class Restaurant extends Facility {
     private List<DailyMenu> dailyMenus = new ArrayList<>();
     @ManyToMany(mappedBy = "favoriteRestaurants")
     private Set<User> favoritedByUsers = new HashSet<>();
-    @OneToMany
-    private Set<User> owners;
+    @ManyToMany
+    @JoinTable(
+            name = "restaurant_owners",
+            joinColumns = @JoinColumn(name = "restaurant_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> owners = new HashSet<>();
 
     public boolean isOpen() {
         LocalDateTime now = LocalDateTime.now();

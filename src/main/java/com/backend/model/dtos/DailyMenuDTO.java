@@ -2,6 +2,7 @@ package com.backend.model.dtos;
 
 import com.backend.model.entities.DailyMenu;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
@@ -11,6 +12,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class DailyMenuDTO {
     private UUID id;
     private LocalDate date;

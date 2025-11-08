@@ -1,5 +1,6 @@
 package com.backend.model.entities;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -33,16 +34,18 @@ public class DailyMenu {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @ManyToMany
+    @ManyToMany()
     @JoinTable(name = "daily_menu_dishes", joinColumns = @JoinColumn(name = "daily_menu_id"), inverseJoinColumns = @JoinColumn(name = "dish_id"))
     private List<Dish> dishes = new ArrayList<>();
     @ManyToOne
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
 
+    private String originalFileName;
+
 
     public enum Status {
-        ACTIVE, INACTIVE
+        ACTIVE, INACTIVE, PROCESSING, DRAFT, FAILED
     }
 
     public boolean isActive(){
