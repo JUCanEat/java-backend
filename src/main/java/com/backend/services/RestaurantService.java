@@ -4,6 +4,7 @@ import com.backend.model.dtos.CreateRestaurantRequest;
 import com.backend.model.dtos.RestaurantDetailsDTO;
 import com.backend.model.dtos.RestaurantListDTO;
 import com.backend.model.entities.Location;
+import com.backend.model.entities.OpeningHours;
 import com.backend.model.entities.Restaurant;
 import com.backend.model.entities.User;
 import com.backend.model.valueObjects.Latitude;
@@ -41,6 +42,7 @@ public class RestaurantService {
     }
     @Transactional
     public RestaurantDetailsDTO createRestaurant(CreateRestaurantRequest request, String userId) {
+        System.out.println("In service.");
         User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
@@ -53,6 +55,19 @@ public class RestaurantService {
         restaurant.setDescription(request.getDescription());
         restaurant.setLocation(location);
         restaurant.setPhotoPath(request.getPhotoPath());
+        if (request.getOpeningHours() != null) {
+            List<OpeningHours> openingHoursList = request.getOpeningHours().stream()
+                    .map(dto -> {
+                        OpeningHours hours = new OpeningHours();
+                        hours.setDayOfWeek(dto.getDayOfWeek());
+                        hours.setOpenTime(dto.getOpenTime());
+                        hours.setCloseTime(dto.getCloseTime());
+                        hours.setRestaurant(restaurant);
+                        return hours;
+                    })
+                    .toList();
+            restaurant.setOpeningHours(openingHoursList);
+        }
         restaurant.getOwners().add(owner);
 
         restaurantRepository.save(restaurant);

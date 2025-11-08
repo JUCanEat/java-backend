@@ -71,14 +71,13 @@ public class RestaurantController {
 
     }
 
-    @PostMapping("/api/restaurants")
-    @PreAuthorize("hasRole('RESTAURANT_OWNER')")
+    @PostMapping()
     public ResponseEntity<RestaurantDetailsDTO> createRestaurant(
             @RequestBody CreateRestaurantRequest request,
             @AuthenticationPrincipal Jwt jwt) {
 
         String userId = jwt.getSubject();
-
+        System.out.println("In controller.");
         RestaurantDetailsDTO restaurant = restaurantService.createRestaurant(request, userId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(restaurant);
