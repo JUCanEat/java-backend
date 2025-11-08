@@ -35,6 +35,8 @@ public class Restaurant extends Facility {
     private List<DailyMenu> dailyMenus = new ArrayList<>();
     @ManyToMany(mappedBy = "favoriteRestaurants")
     private Set<User> favoritedByUsers = new HashSet<>();
+    @OneToMany
+    private Set<User> owners;
 
     public boolean isOpen() {
         LocalDateTime now = LocalDateTime.now();
