@@ -2,6 +2,7 @@ package com.backend.model.dtos;
 
 import com.backend.model.entities.OpeningHours;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.DayOfWeek;
@@ -9,6 +10,7 @@ import java.time.LocalTime;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class OpeningHoursDTO {
     private DayOfWeek dayOfWeek;
     private LocalTime openTime;

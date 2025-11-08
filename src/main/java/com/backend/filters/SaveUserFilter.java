@@ -31,5 +31,4 @@ public class SaveUserFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
-
 }

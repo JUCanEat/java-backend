@@ -1,6 +1,7 @@
 package com.backend.model.entities;
 
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,7 +26,7 @@ public abstract class Facility {
     private UUID id;
     private String description;
     private String photoPath;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private Location location;
 
 }
