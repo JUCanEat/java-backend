@@ -4,7 +4,7 @@ replicaCount: 1
 
 image:
   repository: haniazipser2004/awesome-amazing-project
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   tag: "latest"
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
@@ -169,3 +169,24 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+env:
+  - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI
+    value: http://keycloak:8081/realms/JuCanEat
+  - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI
+    value: http://keycloak:8081/realms/JuCanEat/protocol/openid-connect/certs
+  - name: SPRING_RABBITMQ_HOST
+    value: rabbitmq
+  - name: SPRING_RABBITMQ_PORT
+    value: "5672"
+  - name: SPRING_RABBITMQ_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: rabbitmq-default-user
+        key: username
+  - name: SPRING_RABBITMQ_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: rabbitmq-default-user
+        key: password
+

@@ -1,0 +1,8 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: rabbitmq
+  namespace: default   # <–– ważne: ten sam namespace co Twój backend
+spec:
+  replicas: 1
+
