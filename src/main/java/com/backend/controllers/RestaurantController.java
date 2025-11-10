@@ -70,8 +70,17 @@ public class RestaurantController {
         return ResponseEntity.ok(restaurant);
 
     }
-
+    @Operation(
+            summary = "Add new restaurant",
+            description = "Adds a new restaurant with given details."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved restaurant details"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "403", description = "User does not have a role restaurant_owner")
+    })
     @PostMapping()
+    @PreAuthorize("hasRole('restaurant_owner')")
     public ResponseEntity<RestaurantDetailsDTO> createRestaurant(
             @RequestBody CreateRestaurantRequest request,
             @AuthenticationPrincipal Jwt jwt) {
