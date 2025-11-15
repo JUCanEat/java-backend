@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,6 +40,7 @@ import java.util.UUID;
 @RequestMapping("/api/menus")
 @RequiredArgsConstructor
 @Tag(name = "Menus", description = "Endpoints for retrieving restaurants daily menu")
+@CrossOrigin(origins = "http://localhost:3000")
 public class MenuController {
     private final MenuService menuService;
     private final SseEmitterService sseEmitterService;
