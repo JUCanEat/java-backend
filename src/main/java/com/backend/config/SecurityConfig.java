@@ -10,9 +10,13 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -26,7 +30,9 @@ public class SecurityConfig {
         SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
             JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
             jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new KeycloakRoleConverter());
-            http.cors(Customizer.withDefaults()).csrf(c -> c.disable())
+            http
+                    .csrf(AbstractHttpConfigurer::disable)
+                    .cors(Customizer.withDefaults())
                     .authorizeHttpRequests((a) -> a
                                     .requestMatchers(HttpMethod.POST, "/api/restaurants").hasRole("restaurant_owner")
                                     .requestMatchers(HttpMethod.PUT, "/api/menus/**").hasRole("restaurant_owner")
@@ -39,5 +45,18 @@ public class SecurityConfig {
                     jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter)));
             return http.build();
         }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOrigin("http://localhost:3000");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
 
 }
