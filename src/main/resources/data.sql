@@ -76,10 +76,10 @@ VALUES
 INSERT INTO daily_menu (id, date, status, restaurant_id)
 VALUES
     ('c1111111-aaaa-bbbb-cccc-111111111111', '2025-10-24', 'ACTIVE', 'b2a5f4de-8f39-4e3e-a51e-8c527ce7e1a1'),
-    ('c2222222-bbbb-cccc-dddd-222222222222', '2025-10-24', 'ACTIVE', 'e7c37f89-26b1-4cb5-9b43-6e2c15a0d9a8'),
-    ('c3333333-bbbb-cccc-dddd-333333333333', '2025-10-24', 'ACTIVE', '4a2a13c4-34be-4bef-82c3-a879c91bba5b'),
-    ('c4444444-bbbb-cccc-dddd-444444444444', '2025-10-24', 'ACTIVE', '76e4647b-cb56-460a-9f30-a6b3482fb93a'),
-    ('c5555555-bbbb-cccc-dddd-555555555555', '2025-10-24', 'ACTIVE', '1cbbef85-cac6-4eb4-afd5-feb2f88e5866');
+    ('c2222222-aaaa-bbbb-cccc-222222222222', '2025-10-24', 'ACTIVE', 'e7c37f89-26b1-4cb5-9b43-6e2c15a0d9a8'),
+    ('c3333333-aaaa-bbbb-cccc-333333333333', '2025-10-24', 'ACTIVE', '4a2a13c4-34be-4bef-82c3-a879c91bba5b'),
+    ('c4444444-aaaa-bbbb-cccc-444444444444', '2025-10-24', 'ACTIVE', '76e4647b-cb56-460a-9f30-a6b3482fb93a'),
+    ('c5555555-aaaa-bbbb-cccc-555555555555', '2025-10-24', 'ACTIVE', '1cbbef85-cac6-4eb4-afd5-feb2f88e5866');
 
 ------------------------------------------------------------
 -- DISHES (test menus)
@@ -91,11 +91,21 @@ INSERT INTO dish (id, name, category, amount, currency, restaurant_id) VALUES
 ('d1111111-aaaa-bbbb-cccc-000000000002', 'Red Beet Soup', 'MAIN_COURSE', 8.00, 'PLN', 'b2a5f4de-8f39-4e3e-a51e-8c527ce7e1a1'),
 ('d1111111-aaaa-bbbb-cccc-000000000003', 'Pumpkin Cream Soup', 'MAIN_COURSE', 12.00, 'PLN', 'b2a5f4de-8f39-4e3e-a51e-8c527ce7e1a1');
 
+INSERT INTO daily_menu_dishes (daily_menu_id, dish_id) VALUES
+('c1111111-aaaa-bbbb-cccc-111111111111', 'd1111111-aaaa-bbbb-cccc-000000000001'),
+('c1111111-aaaa-bbbb-cccc-111111111111', 'd1111111-aaaa-bbbb-cccc-000000000002'),
+('c1111111-aaaa-bbbb-cccc-111111111111', 'd1111111-aaaa-bbbb-cccc-000000000003');
+
 -- Bistro by Jelonek
 INSERT INTO dish (id, name, category, amount, currency, restaurant_id) VALUES
 ('d2222222-aaaa-bbbb-cccc-000000000001', 'Chicken Teriyaki Bowl', 'MAIN_COURSE', 24.00, 'PLN', 'e7c37f89-26b1-4cb5-9b43-6e2c15a0d9a8'),
 ('d2222222-aaaa-bbbb-cccc-000000000002', 'Miso Soup', 'MAIN_COURSE', 10.00, 'PLN', 'e7c37f89-26b1-4cb5-9b43-6e2c15a0d9a8'),
 ('d2222222-aaaa-bbbb-cccc-000000000003', 'Salmon Rice Bowl', 'MAIN_COURSE', 9.50, 'PLN', 'e7c37f89-26b1-4cb5-9b43-6e2c15a0d9a8');
+
+INSERT INTO daily_menu_dishes (daily_menu_id, dish_id) VALUES
+('c2222222-aaaa-bbbb-cccc-222222222222', 'd2222222-aaaa-bbbb-cccc-000000000001'),
+('c2222222-aaaa-bbbb-cccc-222222222222', 'd2222222-aaaa-bbbb-cccc-000000000002'),
+('c2222222-aaaa-bbbb-cccc-222222222222', 'd2222222-aaaa-bbbb-cccc-000000000003');
 
 -- Bistro4mat
 INSERT INTO dish (id, name, category, amount, currency, restaurant_id) VALUES
@@ -103,17 +113,32 @@ INSERT INTO dish (id, name, category, amount, currency, restaurant_id) VALUES
 ('d3333333-aaaa-bbbb-cccc-000000000002', 'Tomato Cream Soup', 'MAIN_COURSE', 11.00, 'PLN', '4a2a13c4-34be-4bef-82c3-a879c91bba5b'),
 ('d3333333-aaaa-bbbb-cccc-000000000003', 'Greek Salad', 'MAIN_COURSE', 14.50, 'PLN', '4a2a13c4-34be-4bef-82c3-a879c91bba5b');
 
+INSERT INTO daily_menu_dishes (daily_menu_id, dish_id) VALUES
+('c3333333-aaaa-bbbb-cccc-333333333333', 'd3333333-aaaa-bbbb-cccc-000000000001'),
+('c3333333-aaaa-bbbb-cccc-333333333333', 'd3333333-aaaa-bbbb-cccc-000000000002'),
+('c3333333-aaaa-bbbb-cccc-333333333333', 'd3333333-aaaa-bbbb-cccc-000000000003');
+
 -- Bistro 11
 INSERT INTO dish (id, name, category, amount, currency, restaurant_id) VALUES
 ('d4444444-aaaa-bbbb-cccc-000000000001', 'Pork Chop', 'MAIN_COURSE', 23.00, 'PLN', '76e4647b-cb56-460a-9f30-a6b3482fb93a'),
 ('d4444444-aaaa-bbbb-cccc-000000000002', 'Chicken Broth Soup', 'MAIN_COURSE', 9.00, 'PLN', '76e4647b-cb56-460a-9f30-a6b3482fb93a'),
 ('d4444444-aaaa-bbbb-cccc-000000000003', 'Boiled Potatoes', 'MAIN_COURSE', 6.00, 'PLN', '76e4647b-cb56-460a-9f30-a6b3482fb93a');
 
+INSERT INTO daily_menu_dishes (daily_menu_id, dish_id) VALUES
+('c4444444-aaaa-bbbb-cccc-444444444444', 'd4444444-aaaa-bbbb-cccc-000000000001'),
+('c4444444-aaaa-bbbb-cccc-444444444444', 'd4444444-aaaa-bbbb-cccc-000000000002'),
+('c4444444-aaaa-bbbb-cccc-444444444444', 'd4444444-aaaa-bbbb-cccc-000000000003');
+
 -- Neon Bistro
 INSERT INTO dish (id, name, category, amount, currency, restaurant_id) VALUES
 ('d5555555-aaaa-bbbb-cccc-000000000001', 'Caesar Salad', 'MAIN_COURSE', 21.00, 'PLN', '1cbbef85-cac6-4eb4-afd5-feb2f88e5866'),
 ('d5555555-aaaa-bbbb-cccc-000000000002', 'Broccoli Cream Soup', 'MAIN_COURSE', 11.00, 'PLN', '1cbbef85-cac6-4eb4-afd5-feb2f88e5866'),
 ('d5555555-aaaa-bbbb-cccc-000000000003', 'Tuna Roll', 'MAIN_COURSE', 17.50, 'PLN', '1cbbef85-cac6-4eb4-afd5-feb2f88e5866');
+
+INSERT INTO daily_menu_dishes (daily_menu_id, dish_id) VALUES
+('c5555555-aaaa-bbbb-cccc-555555555555', 'd5555555-aaaa-bbbb-cccc-000000000001'),
+('c5555555-aaaa-bbbb-cccc-555555555555', 'd5555555-aaaa-bbbb-cccc-000000000002'),
+('c5555555-aaaa-bbbb-cccc-555555555555', 'd5555555-aaaa-bbbb-cccc-000000000003');
 
 ------------------------------------------------------------
 -- VENDING MACHINES' LOCATIONS (might require more detailed in person mapping)
