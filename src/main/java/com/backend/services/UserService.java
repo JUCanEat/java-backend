@@ -1,10 +1,13 @@
 package com.backend.services;
 
+import com.backend.model.dtos.FacilityDTO;
 import com.backend.model.dtos.KeycloakUserDTO;
 import com.backend.model.dtos.RestaurantListDTO;
 import com.backend.model.dtos.UserProfileDTO;
+import com.backend.model.entities.Facility;
 import com.backend.model.entities.Restaurant;
 import com.backend.model.entities.User;
+import com.backend.repositories.FacilityRepository;
 import com.backend.repositories.RestaurantRepository;
 import com.backend.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +27,7 @@ import java.util.List;
 public class UserService {
     private final UserRepository userRepository;
     private final KeycloakService keycloakService;
-    private final RestaurantRepository restaurantRepository;
+    private final FacilityRepository facilityRepository;
     @Transactional
     public User getOrCreateUserFromJwt(Jwt jwt) {
         log.info("In filter");
@@ -47,7 +51,16 @@ public class UserService {
 
         KeycloakUserDTO keycloakUser = keycloakService.getUserInfo(accessToken);
 
-        List<Restaurant> ownedRestaurants = restaurantRepository.findAllByOwners_Id(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        List<FacilityDTO> favourites = user.getFavouriteFacilities().stream()
+                .map(FacilityDTO::new)
+                .toList();
+
+        List<RestaurantListDTO> ownedRestaurants = user.getOwnedRestaurants().stream()
+                .map(RestaurantListDTO::new)
+                .toList();
 
         return UserProfileDTO.builder()
                 .id(userId)
@@ -55,9 +68,34 @@ public class UserService {
                 .firstName(keycloakUser.getGivenName())
                 .lastName(keycloakUser.getFamilyName())
                 .username(keycloakUser.getPreferredUsername())
-               // .favouriteRestaurants(favouriteRestaurants)
-                .ownedRestaurants(ownedRestaurants.stream().map(RestaurantListDTO::new).toList())
+                .favourites(favourites)
+                .ownedRestaurants(ownedRestaurants)
                 .build();
     }
+    @Transactional
+    public void addToFavourites(Jwt jwt, UUID facilityId) {
+        String userId = jwt.getSubject();
 
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        Facility facility = facilityRepository.findById(facilityId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Facility not found"));
+
+        user.getFavouriteFacilities().add(facility);
+        userRepository.save(user);
+    }
+
+    public void removeFromFavourites(Jwt jwt, UUID facilityId) {
+        String userId = jwt.getSubject();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        Facility facility = facilityRepository.findById(facilityId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Facility not found"));
+
+        user.getFavouriteFacilities().remove(facility);
+        userRepository.save(user);
+    }
 }

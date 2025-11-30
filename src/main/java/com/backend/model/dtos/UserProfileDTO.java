@@ -14,7 +14,6 @@ public class UserProfileDTO {
     private String firstName;
     private String lastName;
     private String username;
-  //  private List<RestaurantListDTO> favouriteRestaurants;
-//    private List<VendingMachine> favouriteVendingMachines;
+    private List<FacilityDTO> favourites;
     private List<RestaurantListDTO> ownedRestaurants;
 }
