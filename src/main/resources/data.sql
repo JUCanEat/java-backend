@@ -10,13 +10,13 @@ VALUES
     ('550e8400-e29b-41d4-a716-446655440004', 50.03000205209573, 19.905736283744663),  -- Bistro 11, WFAIS
     ('550e8400-e29b-41d4-a716-446655440005', 50.02902509906889, 19.907067338269396);  -- Neon Bistro, WCh
 
-INSERT INTO restaurant (id, name, description, photo_path, location_id)
+INSERT INTO facility (id, description, photo_path, location_id, facility_type, name)
 VALUES
-    ('b2a5f4de-8f39-4e3e-a51e-8c527ce7e1a1', 'Bistro Świetlica', 'Favourite place for CS students to eat', '/images/restaurants/bistro_swietlica.jpg', '550e8400-e29b-41d4-a716-446655440001'),
-    ('e7c37f89-26b1-4cb5-9b43-6e2c15a0d9a8', 'Bistro by Jelonek', 'Some food at WZiKS', '/images/restaurants/bistro_by_jelonek.jpg', '550e8400-e29b-41d4-a716-446655440002'),
-    ('4a2a13c4-34be-4bef-82c3-a879c91bba5b', 'Bistro4mat', 'Some food at IZ', '/images/restaurants/bistro4mat.jpg', '550e8400-e29b-41d4-a716-446655440003'),
-    ('76e4647b-cb56-460a-9f30-a6b3482fb93a', 'Bistro 11', 'Some food at WFAIS', '/images/restaurants/bistro_11.jpg', '550e8400-e29b-41d4-a716-446655440004'),
-    ('1cbbef85-cac6-4eb4-afd5-feb2f88e5866', 'Neon Bistro', 'Some food at WCh', '/images/restaurants/neon_bistro.jpg', '550e8400-e29b-41d4-a716-446655440005');
+    ('b2a5f4de-8f39-4e3e-a51e-8c527ce7e1a1', 'Favourite place for CS students to eat', '/images/restaurants/bistro_swietlica.jpg', '550e8400-e29b-41d4-a716-446655440001', 'RESTAURANT', 'Bistro Świetlica'),
+    ('e7c37f89-26b1-4cb5-9b43-6e2c15a0d9a8', 'Some food at WZiKS', '/images/restaurants/bistro_by_jelonek.jpg', '550e8400-e29b-41d4-a716-446655440002', 'RESTAURANT', 'Bistro by Jelonek'),
+    ('4a2a13c4-34be-4bef-82c3-a879c91bba5b', 'Some food at IZ', '/images/restaurants/bistro4mat.jpg', '550e8400-e29b-41d4-a716-446655440003', 'RESTAURANT', 'Bistro4mat'),
+    ('76e4647b-cb56-460a-9f30-a6b3482fb93a', 'Some food at WFAIS', '/images/restaurants/bistro_11.jpg', '550e8400-e29b-41d4-a716-446655440004', 'RESTAURANT', 'Bistro 11'),
+    ('1cbbef85-cac6-4eb4-afd5-feb2f88e5866', 'Some food at WCh', '/images/restaurants/neon_bistro.jpg', '550e8400-e29b-41d4-a716-446655440005', 'RESTAURANT', 'Neon Bistro');
 
 ------------------------------------------------------------
 -- OPENING HOURS
@@ -154,11 +154,12 @@ VALUES
 -- VENDING MACHINES' INFO
 ------------------------------------------------------------
 
-INSERT INTO vending_machine (id, description, photo_path, location_id, type)
+INSERT INTO facility (id, description, photo_path, location_id, facility_type, type)
 VALUES
-    ('c3b6a5ef-9f40-5d4f-b62f-9d638df8f2b2', 'Snack vending machine with chips, cookies, and candy bars.', '/images/vending/snacks_01.jpg', '550e8400-e29b-41d4-a716-446655440003', 'SNACKS'),
-    ('d4c7b6f0-0a51-6e5f-c73f-0e749ef9f3c3', 'Coffee machine with espresso, cappuccino, and hot chocolate.', '/images/vending/coffee_01.jpg', '550e8400-e29b-41d4-a716-446655440004', 'COFFEE'),
-    ('e5d8c7f1-1b62-7f6f-d84f-1f850ff0f4d4', 'Lunch vending machine with sandwiches, salads, and wraps.', '/images/vending/lunch_01.jpg', '550e8400-e29b-41d4-a716-446655440005', 'LUNCH');
+    ('c3b6a5ef-9f40-5d4f-b62f-9d638df8f2b2', 'Snack vending machine with chips, cookies, and candy bars.', '/images/vending/snacks_01.jpg', '550e8400-e29b-41d4-a716-446655440006', 'VENDING_MACHINE', 'SNACKS'),
+    ('d4c7b6f0-0a51-6e5f-c73f-0e749ef9f3c3', 'Coffee machine with espresso, cappuccino, and hot chocolate.', '/images/vending/coffee_01.jpg', '550e8400-e29b-41d4-a716-446655440007', 'VENDING_MACHINE', 'COFFEE'),
+    ('e5d8c7f1-1b62-7f6f-d84f-1f850ff0f4d4', 'Lunch vending machine with sandwiches, salads, and wraps.', '/images/vending/lunch_01.jpg', '550e8400-e29b-41d4-a716-446655440008', 'VENDING_MACHINE', 'LUNCH');
+
 
 ------------------------------------------------------------
 -- KEYCLOAK
