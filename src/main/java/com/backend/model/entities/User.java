@@ -27,14 +27,12 @@ public class User {
     @ManyToMany(mappedBy = "owners")
     private Set<Restaurant> ownedRestaurants = new HashSet<>();
 
-    //private String email; jeszcze nie wiem czy potrzebujemy to trzymać
-    //private String username;
-    //private LocalDateTime createdAt;
-    //private LocalDateTime lastLoginAt;
-
     @ManyToMany
-    @JoinTable(name = "user_favorite_restaurants", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "restaurant_id"))
-    private Set<Restaurant> favoriteRestaurants = new HashSet<>();
-
+    @JoinTable(
+            name = "user_favourite_facilities",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "facility_id")
+    )
+    private Set<Facility> favouriteFacilities = new HashSet<>();
 
 }

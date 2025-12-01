@@ -17,6 +17,8 @@ services:
       - SPRING_RABBITMQ_USERNAME=admin
       - SPRING_RABBITMQ_PASSWORD=admin
       - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=DEBUG
+      - KEYCLOAK_AUTH_SERVER_URL=http://localhost:8081
+      - KEYCLOAK_REALM=JuCanEat
     extra_hosts:
       - "localhost:host-gateway"
 
