@@ -117,7 +117,7 @@ public class MenuService {
                         "Daily menu draft not found for restaurant: " + id
                 ));
     }
-
+    @Transactional
     public void updateAndApproveMenu(UUID id, DailyMenuDTO request, String ownerId) {
         DailyMenu menu = dailyMenuRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Daily Menu not found for restaurant " + id));

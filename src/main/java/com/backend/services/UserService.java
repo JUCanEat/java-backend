@@ -36,7 +36,7 @@ public class UserService {
         return userRepository.findById(userId)
                 .orElseGet(() -> createUserFromJwt(jwt));
     }
-
+    @Transactional
     private User createUserFromJwt(Jwt jwt) {
         User user = new User();
         user.setId(jwt.getSubject());
@@ -85,7 +85,7 @@ public class UserService {
         user.getFavouriteFacilities().add(facility);
         userRepository.save(user);
     }
-
+    @Transactional
     public void removeFromFavourites(Jwt jwt, UUID facilityId) {
         String userId = jwt.getSubject();
 
