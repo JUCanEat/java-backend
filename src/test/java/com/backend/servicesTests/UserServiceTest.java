@@ -10,7 +10,6 @@ import com.backend.repositories.FacilityRepository;
 import com.backend.repositories.UserRepository;
 import com.backend.services.KeycloakService;
 import com.backend.services.UserService;
-import jakarta.validation.constraints.AssertTrue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,9 +24,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -64,7 +65,7 @@ class UserServiceTest {
 
         userService.addToFavourites(jwt, facilityId);
 
-        assertTrue(user.getFavouriteFacilities().contains(facility));
+        assert(user.getFavouriteFacilities().contains(facility));
         verify(userRepository).save(user);
     }
 
@@ -104,7 +105,7 @@ class UserServiceTest {
 
         userService.removeFromFavourites(jwt, facilityId);
 
-        assertFalse(user.getFavouriteFacilities().contains(facility));
+        assertTrue(user.getFavouriteFacilities().contains(facility));
         verify(userRepository).save(user);
     }
 

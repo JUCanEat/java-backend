@@ -1,8 +1,6 @@
 package com.backend.model.dtos;
 
-import com.backend.model.entities.DailyMenu;
 import com.backend.model.entities.Location;
-import com.backend.model.entities.OpeningHours;
 import com.backend.model.entities.Restaurant;
 import lombok.Getter;
 import lombok.Setter;

@@ -1,6 +1,5 @@
 package com.backend.model.dtos;
 
-import com.backend.model.entities.VendingMachine;
 import lombok.Builder;
 import lombok.Data;
 
