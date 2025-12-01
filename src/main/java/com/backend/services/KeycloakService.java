@@ -3,8 +3,11 @@ package com.backend.services;
 import com.backend.model.dtos.KeycloakUserDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +33,18 @@ public class KeycloakService {
                 .uri(url)
                 .headers(headers -> headers.setBearerAuth(accessToken))
                 .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, response ->
+                        response.bodyToMono(String.class)
+                                .map(body -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                                        "Invalid access token: " + body))
+                )
+                .onStatus(HttpStatusCode::is5xxServerError, response ->
+                        response.bodyToMono(String.class)
+                                .map(body -> new ResponseStatusException(
+                                        HttpStatus.SERVICE_UNAVAILABLE,
+                                        "Keycloak is unavailable: " + body
+                                ))
+                )
                 .bodyToMono(KeycloakUserDTO.class)
                 .block();
     }
