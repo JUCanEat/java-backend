@@ -36,5 +36,7 @@ public abstract class Facility {
     @OneToOne(cascade = CascadeType.ALL)
     private Location location;
 
+    @ManyToMany(mappedBy = "favouriteFacilities")
+    private Set<User> favourited = new HashSet<>();
 
 }

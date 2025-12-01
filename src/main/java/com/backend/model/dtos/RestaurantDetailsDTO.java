@@ -20,7 +20,7 @@ public class RestaurantDetailsDTO {
     private String photoPath;
     private Location location;
     private List<OpeningHoursDTO> openingHours;
-    private int favoritesCount; //TO DO?
+    private int favoritesCount;
 
     public RestaurantDetailsDTO(Restaurant restaurant) {
         this.id = restaurant.getId();
@@ -33,6 +33,7 @@ public class RestaurantDetailsDTO {
                 .map(OpeningHoursDTO::new)
                 .collect(Collectors.toList())
                 :List.of();
+        this.favoritesCount = restaurant.getFavourited().size();
     }
 
 }
