@@ -5,11 +5,11 @@ import com.backend.model.dtos.UserProfileDTO;
 import com.backend.model.entities.Facility;
 import com.backend.model.entities.Restaurant;
 import com.backend.model.entities.User;
-import com.backend.model.entities.VendingMachine;
 import com.backend.repositories.FacilityRepository;
 import com.backend.repositories.UserRepository;
 import com.backend.services.KeycloakService;
 import com.backend.services.UserService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -27,6 +27,7 @@ import java.util.UUID;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -45,39 +46,41 @@ class UserServiceTest {
     @InjectMocks
     UserService userService;
 
-    @Test
-    void addToFavourites_shouldAddFacility() {
-        String userId = "123";
-        UUID facilityId = UUID.randomUUID();
+    private String userId;
+    private UUID facilityId;
+    private User user;
+    private Facility facility;
+    private Jwt jwt;
 
-        User user = new User();
+    @BeforeEach
+    void setUp() {
+        userId = "123";
+        facilityId = UUID.randomUUID();
+
+        jwt = Mockito.mock(Jwt.class);
+        when(jwt.getSubject()).thenReturn(userId);
+
+        user = new User();
         user.setId(userId);
         user.setFavouriteFacilities(new HashSet<>());
 
-        Facility facility = new Restaurant();
+        facility = new Restaurant();
         facility.setId(facilityId);
+    }
 
-        Jwt jwt = Mockito.mock(Jwt.class);
-        when(jwt.getSubject()).thenReturn(userId);
-
+    @Test
+    void addToFavourites_shouldAddFacility() {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(facilityRepository.findById(facilityId)).thenReturn(Optional.of(facility));
 
         userService.addToFavourites(jwt, facilityId);
 
-        assert(user.getFavouriteFacilities().contains(facility));
+        assertTrue(user.getFavouriteFacilities().contains(facility));
         verify(userRepository).save(user);
     }
 
     @Test
     void addToFavourites_shouldThrowIfFacilityNotFound() {
-        String userId = "123";
-        UUID facilityId = UUID.randomUUID();
-
-        Jwt jwt = Mockito.mock(Jwt.class);
-        when(jwt.getSubject()).thenReturn(userId);
-
-        User user = new User();
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(facilityRepository.findById(facilityId)).thenReturn(Optional.empty());
 
@@ -87,35 +90,20 @@ class UserServiceTest {
 
     @Test
     void removeFromFavourites_shouldRemoveFacility() {
-        String userId = "123";
-        UUID facilityId = UUID.randomUUID();
-
-        Facility facility = new Restaurant();
-        facility.setId(facilityId);
-
-        User user = new User();
-        user.setId(userId);
-        user.setFavouriteFacilities(new HashSet<>(Set.of(facility)));
-
-        Jwt jwt = Mockito.mock(Jwt.class);
-        when(jwt.getSubject()).thenReturn(userId);
+        user.getFavouriteFacilities().add(facility);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(facilityRepository.findById(facilityId)).thenReturn(Optional.of(facility));
 
         userService.removeFromFavourites(jwt, facilityId);
 
-        assertTrue(user.getFavouriteFacilities().contains(facility));
+        assertFalse(user.getFavouriteFacilities().contains(facility));
         verify(userRepository).save(user);
     }
 
     @Test
     void removeFromFavourites_shouldThrowIfUserNotFound() {
-        UUID facilityId = UUID.randomUUID();
-        Jwt jwt = Mockito.mock(Jwt.class);
-
-        when(jwt.getSubject()).thenReturn("x");
-        when(userRepository.findById("x")).thenReturn(Optional.empty());
+        when(userRepository.findById("123")).thenReturn(Optional.empty());
 
         assertThrows(ResponseStatusException.class,
                 () -> userService.removeFromFavourites(jwt, facilityId));
@@ -123,17 +111,12 @@ class UserServiceTest {
 
     @Test
     void getFullProfile_shouldReturnUserProfile() {
-        String userId = "123";
-        Jwt jwt = Mockito.mock(Jwt.class);
-        when(jwt.getSubject()).thenReturn(userId);
         when(jwt.getTokenValue()).thenReturn("token");
 
         User user = new User();
         user.setId(userId);
 
-        Facility facility = new VendingMachine();
-        facility.setId(UUID.randomUUID());
-        user.setFavouriteFacilities(Set.of(facility));
+        user.getFavouriteFacilities().add(facility);
 
         Restaurant restaurant = new Restaurant();
         restaurant.setId(UUID.randomUUID());
