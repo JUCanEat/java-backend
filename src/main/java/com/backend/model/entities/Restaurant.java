@@ -17,10 +17,12 @@ import lombok.Setter;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 
 
 @Getter
@@ -46,7 +48,7 @@ public class Restaurant extends Facility {
     private Set<User> owners = new HashSet<>();
 
     public boolean isOpen() {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Warsaw"));
         DayOfWeek today = now.getDayOfWeek();
         LocalTime currentTime = now.toLocalTime();
 
@@ -66,9 +68,8 @@ public class Restaurant extends Facility {
 
     public DailyMenu getTodayMenu(){
         return dailyMenus.stream()
-                    .filter(DailyMenu::isActive)
-                    .findFirst()
-                    .orElse(null);
+                .filter(DailyMenu::isActive)
+                .findFirst()
+                .orElse(null);
     }
-
 }
