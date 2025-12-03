@@ -7,6 +7,7 @@ import com.backend.model.entities.Dish;
 import com.backend.model.valueObjects.Price;
 import com.backend.repositories.DailyMenuRepository;
 import com.backend.repositories.DishRepository;
+import com.backend.services.MenuAIService;
 import com.backend.services.SseEmitterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,7 @@ public class MenuProcessingListener {
     private final DishRepository dishRepository;
     // private final ElasticsearchService elasticsearchService; // opcjonalnie
     private final SseEmitterService sseEmitterService;
+    private final MenuAIService menuAIService;
 
     @RabbitListener(queues = RabbitMQConfig.MENU_PROCESSING_QUEUE)
     @Transactional
@@ -37,16 +39,26 @@ public class MenuProcessingListener {
             DailyMenu menu = dailyMenuRepository.findById(message.getId())
                     .orElseThrow(() -> new RuntimeException("Menu not found: " + message.getId()));
 
-            //List<Dish> parsedItems = menuAIService.parseMenuFromImage(message.getImagePath());
-            List<Dish> parsedItems = mockOcr();
-            log.info("Successfully processed image {} with {} items", message.getFileName(), parsedItems.size());
+            List<Dish> parsedItems = menuAIService.parseMenuFromImage(message.getImageData());
 
+            /*
+            System.out.println("Parsed items test!!");
+            System.out.println(parsedItems.getFirst().getId());
+            System.out.println(parsedItems.getFirst().getName());
+             */
+
+            log.info("Successfully processed image {} with {} items", message.getFileName(), parsedItems.size());
 
             if (parsedItems.isEmpty()) {
                 throw new RuntimeException("No items parsed from image");
             }
 
+            // ERROR TO FIX HERE !!!
+            // Execution of Rabbit message listener failed.
+
+            /*
             menu.setDishes(parsedItems);
+
             menu.setStatus(DailyMenu.Status.DRAFT);
             //menu.setProcessedAt(LocalDateTime.now()); do audit logów?
 
@@ -54,6 +66,8 @@ public class MenuProcessingListener {
 
             //EVENT DLA FRONTENDU!!!
             sseEmitterService.sendEvent(message.getOwnerId(), menu.getId());
+
+             */
 
         } catch (Exception e) {
             log.error("Failed to process menu: {} : {}", message.getId(), e.getMessage());
@@ -66,8 +80,9 @@ public class MenuProcessingListener {
         }
     }
 
+    // FOR TESTING PURPOSES
+    /*
     public List<Dish> mockOcr() {
-
         return new ArrayList<>( List.of(
                 createMockDish(
                         "Zupa pomidorowa",
@@ -94,4 +109,6 @@ public class MenuProcessingListener {
         dishRepository.save(dish);
         return dish;
     }
+
+     */
 }

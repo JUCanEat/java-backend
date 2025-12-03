@@ -25,6 +25,15 @@ public class Price {
         this.currency = currency.toUpperCase();
     }
 
+    public Price(String joined_price) {
+        String[] parts = joined_price.split(" ");
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Invalid price format. Expected format: '<amount> <currency>'");
+        }
+        this.amount = new BigDecimal(parts[0]);
+        this.currency = parts[1].toUpperCase();
+    }
+
     public Price add(Price other) {
         ensureSameCurrency(other);
         return new Price(this.amount.add(other.amount), this.currency);

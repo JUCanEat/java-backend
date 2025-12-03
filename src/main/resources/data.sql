@@ -63,9 +63,3 @@ INSERT INTO keycloak_user (id)
 VALUES (
     'e8efd725-8397-4aea-979f-3c096470d23b'  -- To jest subject z JWT Keycloak koneicznie z rola owner!!
 );
-
-INSERT INTO restaurant_owners (restaurant_id, user_id)
-VALUES (
-    'b2a5f4de-8f39-4e3e-a51e-8c527ce7e1a1',  -- ID restauracji La Bella Italia
-    'e8efd725-8397-4aea-979f-3c096470d23b'  -- ID ownera z users
-);
