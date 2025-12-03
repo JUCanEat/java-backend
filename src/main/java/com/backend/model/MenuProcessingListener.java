@@ -39,26 +39,15 @@ public class MenuProcessingListener {
             DailyMenu menu = dailyMenuRepository.findById(message.getId())
                     .orElseThrow(() -> new RuntimeException("Menu not found: " + message.getId()));
 
+            // Call AI service to parse menu from image
             List<Dish> parsedItems = menuAIService.parseMenuFromImage(message.getImageData());
 
-            /*
-            System.out.println("Parsed items test!!");
-            System.out.println(parsedItems.getFirst().getId());
-            System.out.println(parsedItems.getFirst().getName());
-             */
-
             log.info("Successfully processed image {} with {} items", message.getFileName(), parsedItems.size());
-
             if (parsedItems.isEmpty()) {
                 throw new RuntimeException("No items parsed from image");
             }
 
-            // ERROR TO FIX HERE !!!
-            // Execution of Rabbit message listener failed.
-
-            /*
             menu.setDishes(parsedItems);
-
             menu.setStatus(DailyMenu.Status.DRAFT);
             //menu.setProcessedAt(LocalDateTime.now()); do audit logów?
 
@@ -67,7 +56,6 @@ public class MenuProcessingListener {
             //EVENT DLA FRONTENDU!!!
             sseEmitterService.sendEvent(message.getOwnerId(), menu.getId());
 
-             */
 
         } catch (Exception e) {
             log.error("Failed to process menu: {} : {}", message.getId(), e.getMessage());
@@ -79,36 +67,4 @@ public class MenuProcessingListener {
 
         }
     }
-
-    // FOR TESTING PURPOSES
-    /*
-    public List<Dish> mockOcr() {
-        return new ArrayList<>( List.of(
-                createMockDish(
-                        "Zupa pomidorowa",
-                        new BigDecimal("12.50"),
-                        Set.of(Dish.Allergens.GLUTEN, Dish.Allergens.LACTOSE)),
-
-                createMockDish("Rosół z makaronem",
-                        new BigDecimal("15.00"),
-                        Set.of(Dish.Allergens.GLUTEN)),
-
-                createMockDish("Schabowy z ziemniakami",
-                        new BigDecimal("28.00"),
-                        Set.of(Dish.Allergens.GLUTEN))
-        ));
-    }
-
-    // Helper method
-    private Dish createMockDish(String name, BigDecimal price, Set<Dish.Allergens> allergens) {
-        Dish dish = new Dish();
-        dish.setName(name);
-        dish.setCategory(Dish.Category.MAIN_COURSE);
-        dish.setPrice(new Price(price, "PLN"));
-        dish.setAllergens(allergens);
-        dishRepository.save(dish);
-        return dish;
-    }
-
-     */
 }
