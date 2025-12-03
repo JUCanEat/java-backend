@@ -1,7 +1,0 @@
-com\backend\repositoriesTests\MenuRepositoryTest.class
-com\backend\controllersTests\MenuControllerTest.class
-com\backend\servicesTests\MenuServiceTest.class
-com\backend\servicesTests\RestaurantServiceTest.class
-com\backend\controllersTests\FacilityControllerTest.class
-com\backend\servicesTests\FacilityServiceTest.class
-com\backend\controllersTests\RestaurantControllerTest.class
