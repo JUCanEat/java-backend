@@ -110,13 +110,13 @@ public class MenuController {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved restaurant details"),
             @ApiResponse(responseCode = "404", description = "Restaurant not found")
     })
-    @PutMapping("/{id}")
+    @PutMapping("/{restaurantId}")
     @PreAuthorize("hasRole('restaurant_owner')")
-    public ResponseEntity<Void> updateMenu(@PathVariable UUID id,
+    public ResponseEntity<Void> updateMenu(@PathVariable UUID restaurantId,
                                            @RequestBody DailyMenuDTO request,
                                            @AuthenticationPrincipal Jwt jwt) {
         String ownerId = jwt.getSubject();
-        menuService.updateAndApproveMenu(id, request, ownerId);
+        menuService.updateAndApproveMenu(restaurantId, request, ownerId);
         return ResponseEntity.ok().build();
     }
 
