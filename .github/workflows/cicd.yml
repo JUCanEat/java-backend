@@ -41,14 +41,14 @@ jobs:
       run: ./mvnw -q test
 
     - name: Log in to Docker
-      if: github.ref_name == github.event.repository.default_branch
+    #  if: github.ref_name == github.event.repository.default_branch
       uses: docker/login-action@v2
       with:
           username: ${{ vars.DOCKER_ID }}
           password: ${{ secrets.DOCKER_PAT }}
 
     - name: Set image tag
-      if: github.ref_name == github.event.repository.default_branch
+     # if: github.ref_name == github.event.repository.default_branch
       id: tags
       run: |
         SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
@@ -60,7 +60,7 @@ jobs:
         fi
 
     - name: Build and push Docker image
-      if: github.ref_name == github.event.repository.default_branch
+      #if: github.ref_name == github.event.repository.default_branch
       run: |
         mvn spring-boot:build-image \
           -Dspring-boot.build-image.imageName=${{ steps.tags.outputs.tags }} \
