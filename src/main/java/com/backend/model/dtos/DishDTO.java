@@ -1,7 +1,6 @@
 package com.backend.model.dtos;
 
 import com.backend.model.entities.Dish;
-import com.backend.model.valueObjects.Price;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,7 +8,6 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter

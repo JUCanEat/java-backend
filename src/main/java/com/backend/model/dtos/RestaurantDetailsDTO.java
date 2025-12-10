@@ -1,8 +1,6 @@
 package com.backend.model.dtos;
 
-import com.backend.model.entities.DailyMenu;
 import com.backend.model.entities.Location;
-import com.backend.model.entities.OpeningHours;
 import com.backend.model.entities.Restaurant;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,7 +18,7 @@ public class RestaurantDetailsDTO {
     private String photoPath;
     private Location location;
     private List<OpeningHoursDTO> openingHours;
-    private int favoritesCount; //TO DO?
+    private int favoritesCount;
 
     public RestaurantDetailsDTO(Restaurant restaurant) {
         this.id = restaurant.getId();
@@ -33,6 +31,7 @@ public class RestaurantDetailsDTO {
                 .map(OpeningHoursDTO::new)
                 .collect(Collectors.toList())
                 :List.of();
+        this.favoritesCount = restaurant.getFavourited().size();
     }
 
 }

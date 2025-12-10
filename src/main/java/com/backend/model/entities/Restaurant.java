@@ -1,6 +1,7 @@
 package com.backend.model.entities;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
@@ -17,16 +18,18 @@ import lombok.Setter;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 
+
 @Getter
 @Setter
 @Entity
-@Table(name = "restaurant")
+@DiscriminatorValue("RESTAURANT")
 public class Restaurant extends Facility {
     private String name;
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -35,8 +38,6 @@ public class Restaurant extends Facility {
     private List<Dish> dishes = new ArrayList<>();
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
     private List<DailyMenu> dailyMenus = new ArrayList<>();
-    @ManyToMany(mappedBy = "favoriteRestaurants")
-    private Set<User> favoritedByUsers = new HashSet<>();
     @ManyToMany
     @JoinTable(
             name = "restaurant_owners",
@@ -46,7 +47,7 @@ public class Restaurant extends Facility {
     private Set<User> owners = new HashSet<>();
 
     public boolean isOpen() {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Warsaw"));
         DayOfWeek today = now.getDayOfWeek();
         LocalTime currentTime = now.toLocalTime();
 
@@ -66,9 +67,8 @@ public class Restaurant extends Facility {
 
     public DailyMenu getTodayMenu(){
         return dailyMenus.stream()
-                    .filter(DailyMenu::isActive)
-                    .findFirst()
-                    .orElse(null);
+                .filter(DailyMenu::isActive)
+                .findFirst()
+                .orElse(null);
     }
-
 }

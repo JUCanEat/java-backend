@@ -41,3 +41,10 @@
 7. Documentation
 - Documentation is generated under http://localhost:8080/swagger-ui/index.html
 - To add custom descrtptions see example controller
+
+## Testing H2 db updates
+0. Update data.sql file, which contains queries creating the database
+1. Rebuild .jar with `mvn clean package`
+2. Build your own docker image locally and use it to run the app (instead of the one from CI/CD)
+
+_See [this PR](https://github.com/JUCanEat/java-backend/pull/38) for reference and tips_
