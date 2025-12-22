@@ -179,7 +179,7 @@ INSERT INTO dish_allergens (dish_id, allergen) VALUES
 ('d5555555-aaaa-bbbb-cccc-000000000001', 'MEAT'),      -- Caesar Salad (usually contains chicken)
 ('d5555555-aaaa-bbbb-cccc-000000000002', 'LACTOSE'),   -- Broccoli Cream Soup (contains cream)
 ('d5555555-aaaa-bbbb-cccc-000000000003', 'MEAT'),      -- Tuna Roll (contains fish/meat)
-('d5555555-aaaa-bbbb-cccc-000000000003', 'GLUTEN');    -- Tuna Roll (contains rice wrapper/nori which may have gluten)
+('d5555555-aaaa-bbbb-cccc-000000000003', 'GLUTEN');    -- Tuna Roll (may contain soy sauce or tempura)
 
 ------------------------------------------------------------
 -- VENDING MACHINES' LOCATIONS (might require more detailed in person mapping)
