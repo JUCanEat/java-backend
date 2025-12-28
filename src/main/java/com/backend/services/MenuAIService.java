@@ -92,7 +92,7 @@ public class MenuAIService {
             Return only the JSON array of dishes.
             """;
         int maxRetries = 5;
-        List<AIDishDTO> AIdishDTOs = new ArrayList<AIDishDTO>();
+        List<AIDishDTO> AIdishDTOs = new ArrayList<>();
         // main query to the LLM with image and prompt, automatically deserializing response to List<DishDTO>
         for(int i = 0; i < 5; i++) {
             System.out.println("sending menu to AI - attempt" + i + "/" + maxRetries);
