@@ -23,7 +23,10 @@ public class SseEmitterService {
         if (emitter != null) {
             try {
                 emitter.send(SseEmitter.event().name("menuProcessed").data(data));
+                emitter.complete();
             } catch (Exception e) {
+                emitter.completeWithError(e);
+            } finally {
                 emitters.remove(ownerId);
             }
         }
