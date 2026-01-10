@@ -12,15 +12,13 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-public class DishDTO {
-    private UUID id;
+public class AIDishDTO {
     private String name;
     private String category;
     private BigDecimal price;
     private Set<Dish.Allergens> allergens;
 
-    public DishDTO(Dish dish) {
-        this.id = dish.getId();
+    public AIDishDTO(Dish dish) {
         this.name = dish.getName();
         this.category = dish.getCategory().name();
         this.price = dish.getPrice().getAmount();

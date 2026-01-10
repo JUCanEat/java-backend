@@ -7,6 +7,7 @@ import com.backend.model.entities.Dish;
 import com.backend.model.valueObjects.Price;
 import com.backend.repositories.DailyMenuRepository;
 import com.backend.repositories.DishRepository;
+import com.backend.services.MenuAIService;
 import com.backend.services.SseEmitterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,7 @@ public class MenuProcessingListener {
     private final DishRepository dishRepository;
     // private final ElasticsearchService elasticsearchService; // opcjonalnie
     private final SseEmitterService sseEmitterService;
+    private final MenuAIService menuAIService;
 
     @RabbitListener(queues = RabbitMQConfig.MENU_PROCESSING_QUEUE)
     @Transactional
@@ -37,11 +39,10 @@ public class MenuProcessingListener {
             DailyMenu menu = dailyMenuRepository.findById(message.getId())
                     .orElseThrow(() -> new RuntimeException("Menu not found: " + message.getId()));
 
-            //List<Dish> parsedItems = menuAIService.parseMenuFromImage(message.getImagePath());
-            List<Dish> parsedItems = mockOcr();
+            // Call AI service to parse menu from image
+            List<Dish> parsedItems = menuAIService.parseMenuFromImage(message.getImageData());
+
             log.info("Successfully processed image {} with {} items", message.getFileName(), parsedItems.size());
-
-
             if (parsedItems.isEmpty()) {
                 throw new RuntimeException("No items parsed from image");
             }
@@ -55,6 +56,7 @@ public class MenuProcessingListener {
             //EVENT DLA FRONTENDU!!!
             sseEmitterService.sendEvent(message.getOwnerId(), menu.getId());
 
+
         } catch (Exception e) {
             log.error("Failed to process menu: {} : {}", message.getId(), e.getMessage());
 
@@ -64,34 +66,5 @@ public class MenuProcessingListener {
             });
 
         }
-    }
-
-    public List<Dish> mockOcr() {
-
-        return new ArrayList<>( List.of(
-                createMockDish(
-                        "Zupa pomidorowa",
-                        new BigDecimal("12.50"),
-                        Set.of(Dish.Allergens.GLUTEN, Dish.Allergens.LACTOSE)),
-
-                createMockDish("Rosół z makaronem",
-                        new BigDecimal("15.00"),
-                        Set.of(Dish.Allergens.GLUTEN)),
-
-                createMockDish("Schabowy z ziemniakami",
-                        new BigDecimal("28.00"),
-                        Set.of(Dish.Allergens.GLUTEN))
-        ));
-    }
-
-    // Helper method
-    private Dish createMockDish(String name, BigDecimal price, Set<Dish.Allergens> allergens) {
-        Dish dish = new Dish();
-        dish.setName(name);
-        dish.setCategory(Dish.Category.MAIN_COURSE);
-        dish.setPrice(new Price(price, "PLN"));
-        dish.setAllergens(allergens);
-        dishRepository.save(dish);
-        return dish;
     }
 }

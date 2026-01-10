@@ -69,11 +69,6 @@ public class MenuService {
         }
 
         LocalDate today = LocalDate.now();
-        Optional<DailyMenu> previousMenu = dailyMenuRepository.findByRestaurantIdAndStatus(restaurantId, DailyMenu.Status.ACTIVE);
-        if (previousMenu.isPresent()) {
-            previousMenu.get().setStatus(DailyMenu.Status.INACTIVE);
-            dailyMenuRepository.save(previousMenu.get());
-        }
 
         DailyMenu menu = new DailyMenu();
         menu.setRestaurant(restaurant);
@@ -117,18 +112,38 @@ public class MenuService {
                         "Daily menu draft not found for restaurant: " + id
                 ));
     }
+    @Transactional
+    public void updateAndApproveMenu(UUID restaurantId, DailyMenuDTO request, String ownerId) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Restaurant not found"));
 
-    public void updateAndApproveMenu(UUID id, DailyMenuDTO request, String ownerId) {
-        DailyMenu menu = dailyMenuRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Daily Menu not found for restaurant " + id));
 
-        if (menu.getRestaurant().getOwners().stream().noneMatch(owner -> owner.getId().equals(ownerId))) {
+        if (restaurant.getOwners().stream().noneMatch(owner -> owner.getId().equals(ownerId))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "You are not the owner of this restaurant");
         }
 
-        if (menu.getStatus() != DailyMenu.Status.DRAFT) {
-            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Menu not ready for approval");
+        Optional<DailyMenu> processingMenu = dailyMenuRepository
+                .findByRestaurantIdAndStatus(restaurantId, DailyMenu.Status.PROCESSING);
+
+        if (processingMenu.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Menu is currently being processed by OCR. Please wait for processing to complete.");
+        }
+
+        Optional<DailyMenu> existingMenu = dailyMenuRepository
+                .findByRestaurantIdAndStatus(restaurantId, DailyMenu.Status.DRAFT);
+
+        DailyMenu menu;
+
+        if (existingMenu.isPresent()) {
+            menu = existingMenu.get();
+            menu.getDishes().clear();
+        } else {
+            menu = new DailyMenu();
+            menu.setRestaurant(restaurant);
+            menu.setDate(LocalDate.now());
         }
 
         if (request.getDishes() != null && !request.getDishes().isEmpty()) {
@@ -148,6 +163,12 @@ public class MenuService {
                     .collect(Collectors.toList());
 
             menu.getDishes().addAll(updatedDishes);
+        }
+
+        Optional<DailyMenu> previousMenu = dailyMenuRepository.findByRestaurantIdAndStatus(restaurantId, DailyMenu.Status.ACTIVE);
+        if (previousMenu.isPresent()) {
+            previousMenu.get().setStatus(DailyMenu.Status.INACTIVE);
+            dailyMenuRepository.save(previousMenu.get());
         }
 
         menu.setStatus(DailyMenu.Status.ACTIVE);
