@@ -32,6 +32,7 @@ services:
     command: start-dev --import-realm
     volumes:
       - ./imports:/opt/keycloak/data/import
+      - ./keycloak/themes:/opt/keycloak/themes
 
   rabbitmq:
     image: 'rabbitmq:latest'
