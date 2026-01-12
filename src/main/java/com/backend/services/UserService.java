@@ -70,6 +70,20 @@ public class UserService {
                 .ownedRestaurants(ownedRestaurants)
                 .build();
     }
+
+    @Transactional
+    public UUID getFirstOwnedRestaurant(Jwt jwt) {
+        String userId = jwt.getSubject();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        return user.getOwnedRestaurants().stream()
+                .findFirst()
+                .map(restaurant -> restaurant.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User has no owned restaurants"));
+    }
+
     @Transactional
     public void addToFavourites(Jwt jwt, UUID facilityId) {
         String userId = jwt.getSubject();

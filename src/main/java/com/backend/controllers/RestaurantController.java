@@ -72,6 +72,24 @@ public class RestaurantController {
         return ResponseEntity.ok(restaurant);
 
     }
+
+    @Operation(
+            summary = "Get restaurant owners by ID",
+            description = "Retrieves the list of owner user IDs for a specific restaurant."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved restaurant owners"),
+            @ApiResponse(responseCode = "404", description = "Restaurant not found")
+    })
+    @GetMapping("/{id}/owners")
+    public ResponseEntity<List<String>> getRestaurantOwners(
+            @Parameter(description = "Id of the restaurant", required = true)
+            @PathVariable UUID id) {
+
+        List<String> ownerIds = restaurantService.getRestaurantOwners(id);
+        return ResponseEntity.ok(ownerIds);
+    }
+
     @Operation(
             summary = "Add new restaurant",
             description = "Adds a new restaurant with given details."

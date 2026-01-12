@@ -73,4 +73,28 @@ public class RestaurantService {
         restaurantRepository.save(restaurant);
         return new RestaurantDetailsDTO(restaurant);
     }
+
+    /**
+     * Adds the given user as an owner of the restaurant.
+     * Dev-friendly helper used to associate a logged-in Keycloak user with an existing restaurant.
+     */
+    public void addOwnerToRestaurant(UUID restaurantId, String userId) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found"));
+
+        User owner = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        restaurant.getOwners().add(owner);
+        restaurantRepository.save(restaurant);
+    }
+
+    public List<String> getRestaurantOwners(UUID restaurantId) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found"));
+
+        return restaurant.getOwners().stream()
+                .map(User::getId)
+                .collect(Collectors.toList());
+    }
 }
