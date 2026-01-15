@@ -111,31 +111,39 @@ class UserServiceTest {
 
     @Test
     void getFullProfile_shouldReturnUserProfile() {
-        when(jwt.getTokenValue()).thenReturn("token");
+        // Mockowanie JWT
+        when(jwt.getSubject()).thenReturn("123");
+        when(jwt.getClaimAsString("email")).thenReturn("test@mail.com");
+        when(jwt.getClaimAsString("given_name")).thenReturn("John");
+        when(jwt.getClaimAsString("family_name")).thenReturn("Doe");
+        when(jwt.getClaimAsString("preferred_username")).thenReturn("johndoe");
 
+        // Mockowanie UserRepository
         User user = new User();
-        user.setId(userId);
+        user.setId("123");
 
+        // ulubione obiekty
+        Restaurant facility = new Restaurant();
         user.getFavouriteFacilities().add(facility);
 
+        // posiadane restauracje
         Restaurant restaurant = new Restaurant();
         restaurant.setId(UUID.randomUUID());
         user.setOwnedRestaurants(Set.of(restaurant));
 
-        KeycloakUserDTO kcDto = new KeycloakUserDTO();
-        kcDto.setEmail("test@mail.com");
-        kcDto.setGivenName("John");
-        kcDto.setFamilyName("Doe");
-        kcDto.setPreferredUsername("johndoe");
+        when(userRepository.findById("123")).thenReturn(Optional.of(user));
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(keycloakService.getUserInfo("token")).thenReturn(kcDto);
-
+        // Wywołanie testowanej metody
         UserProfileDTO dto = userService.getFullProfile(jwt);
 
+        // Assercje
         assertEquals("123", dto.getId());
         assertEquals("test@mail.com", dto.getEmail());
+        assertEquals("John", dto.getFirstName());
+        assertEquals("Doe", dto.getLastName());
+        assertEquals("johndoe", dto.getUsername());
         assertEquals(1, dto.getFavourites().size());
         assertEquals(1, dto.getOwnedRestaurants().size());
     }
+
 }
