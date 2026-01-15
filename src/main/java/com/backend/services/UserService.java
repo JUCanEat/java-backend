@@ -45,9 +45,11 @@ public class UserService {
     @Transactional
     public UserProfileDTO getFullProfile(Jwt token) {
         String userId = token.getSubject();
-        String accessToken = token.getTokenValue();
 
-        KeycloakUserDTO keycloakUser = keycloakService.getUserInfo(accessToken);
+        String email = token.getClaimAsString("email");
+        String firstName = token.getClaimAsString("given_name");
+        String lastName = token.getClaimAsString("family_name");
+        String username = token.getClaimAsString("preferred_username");
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
@@ -62,10 +64,10 @@ public class UserService {
 
         return UserProfileDTO.builder()
                 .id(userId)
-                .email(keycloakUser.getEmail())
-                .firstName(keycloakUser.getGivenName())
-                .lastName(keycloakUser.getFamilyName())
-                .username(keycloakUser.getPreferredUsername())
+                .email(email)
+                .firstName(firstName)
+                .lastName(lastName)
+                .username(username)
                 .favourites(favourites)
                 .ownedRestaurants(ownedRestaurants)
                 .build();
