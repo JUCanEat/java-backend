@@ -38,7 +38,7 @@ public class SecurityConfig {
                                     .requestMatchers(HttpMethod.PUT, "/api/menus/**").hasRole("restaurant_owner")
                                     .requestMatchers(HttpMethod.GET, "/api/menus/*/draft").hasRole("restaurant_owner")
                                     .requestMatchers(HttpMethod.GET, "/api/menus/events").hasRole("restaurant_owner")
-                                    .requestMatchers(HttpMethod.GET, "/api/users").permitAll() //DEBUG ONLY!
+                                    .requestMatchers(HttpMethod.GET, "/api/users").authenticated()
                                    // .anyRequest().authenticated());
                                     .anyRequest().permitAll());
             http.oauth2ResourceServer(rsc -> rsc.jwt(jwtConfigurer ->
