@@ -60,6 +60,7 @@ class RestaurantControllerTest {
         UUID restaurantId = UUID.randomUUID();
         when(restaurantService.getRestaurantById(restaurantId))
                 .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found"));
+
         mockMvc.perform(get("/api/restaurants/{id}", restaurantId))
                 .andExpect(status().isNotFound());
     }

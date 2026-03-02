@@ -44,7 +44,7 @@ class RestaurantServiceTest {
 
     @Mock
     private RestaurantRepository restaurantRepository;
-
+    
     @Mock
     private UserRepository userRepository;
 
@@ -61,12 +61,10 @@ class RestaurantServiceTest {
     void setUp() {
         userId = "test-user-123";
         
-        // Setup user
         user = new User();
         user.setId(userId);
         user.setOwnedRestaurants(new HashSet<>());
 
-        // Setup restaurant
         restaurant = new Restaurant();
         restaurant.setId(UUID.randomUUID());
         restaurant.setName("Testowa Restauracja");
