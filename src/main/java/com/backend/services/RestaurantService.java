@@ -3,6 +3,7 @@ package com.backend.services;
 import com.backend.model.dtos.CreateRestaurantRequest;
 import com.backend.model.dtos.RestaurantDetailsDTO;
 import com.backend.model.dtos.RestaurantListDTO;
+import com.backend.model.dtos.UpdateRestaurantRequest;
 import com.backend.model.entities.Location;
 import com.backend.model.entities.OpeningHours;
 import com.backend.model.entities.Restaurant;
@@ -96,5 +97,66 @@ public class RestaurantService {
         return restaurant.getOwners().stream()
                 .map(User::getId)
                 .collect(Collectors.toList());
+    }
+
+    public List<RestaurantListDTO> getRestaurantsByOwner(String userId) {
+        User owner = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        return owner.getOwnedRestaurants().stream()
+                .map(RestaurantListDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public RestaurantDetailsDTO updateRestaurant(UUID restaurantId, UpdateRestaurantRequest request, String userId) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found"));
+
+        boolean isOwner = restaurant.getOwners().stream()
+                .anyMatch(owner -> owner.getId().equals(userId));
+        
+        if (!isOwner) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User not authorized to edit this restaurant");
+        }
+
+        if (request.getName() != null) {
+            restaurant.setName(request.getName());
+        }
+        if (request.getDescription() != null) {
+            restaurant.setDescription(request.getDescription());
+        }
+        if (request.getPhotoPath() != null) {
+            restaurant.setPhotoPath(request.getPhotoPath());
+        }
+
+        if (request.getLatitude() != null && request.getLongitude() != null) {
+            Location location = restaurant.getLocation();
+            if (location == null) {
+                location = new Location();
+                restaurant.setLocation(location);
+            }
+            location.setLatitude(new Latitude(request.getLatitude()));
+            location.setLongitude(new Longitude(request.getLongitude()));
+        }
+
+        if (request.getOpeningHours() != null) {
+            restaurant.getOpeningHours().clear();
+            
+            List<OpeningHours> openingHoursList = request.getOpeningHours().stream()
+                    .map(dto -> {
+                        OpeningHours hours = new OpeningHours();
+                        hours.setDayOfWeek(dto.getDayOfWeek());
+                        hours.setOpenTime(dto.getOpenTime());
+                        hours.setCloseTime(dto.getCloseTime());
+                        hours.setRestaurant(restaurant);
+                        return hours;
+                    })
+                    .toList();
+            restaurant.setOpeningHours(openingHoursList);
+        }
+
+        restaurantRepository.save(restaurant);
+        return new RestaurantDetailsDTO(restaurant);
     }
 }
