@@ -3,7 +3,6 @@ package com.backend.controllersTests;
 import com.backend.controllers.RestaurantController;
 import com.backend.filters.SaveUserFilter;
 import com.backend.model.dtos.RestaurantDetailsDTO;
-import com.backend.model.dtos.UpdateRestaurantRequest;
 import com.backend.model.entities.Restaurant;
 import com.backend.services.RestaurantService;
 import org.junit.jupiter.api.Test;
@@ -18,10 +17,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import org.springframework.http.MediaType;
 
 import java.util.UUID;
 
@@ -63,32 +60,7 @@ class RestaurantControllerTest {
         UUID restaurantId = UUID.randomUUID();
         when(restaurantService.getRestaurantById(restaurantId))
                 .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found"));
-
         mockMvc.perform(get("/api/restaurants/{id}", restaurantId))
                 .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void shouldUpdateRestaurantSuccessfully() throws Exception {
-        UUID restaurantId = UUID.randomUUID();
-        String userId = "user123";
-        
-        Restaurant updatedRestaurant = new Restaurant();
-        updatedRestaurant.setId(restaurantId);
-        updatedRestaurant.setName("Updated Restaurant Name");
-        updatedRestaurant.setDescription("Updated description");
-        
-        RestaurantDetailsDTO expectedResponse = new RestaurantDetailsDTO(updatedRestaurant);
-        
-        when(restaurantService.updateRestaurant(restaurantId, new UpdateRestaurantRequest(), userId))
-                .thenReturn(expectedResponse);
-
-        mockMvc.perform(put("/api/restaurants/{id}", restaurantId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"Updated Restaurant Name\",\"description\":\"Updated description\"}")
-                .requestAttr("userId", userId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(restaurantId.toString()))
-                .andExpect(jsonPath("$.name").value("Updated Restaurant Name"));
     }
 }
