@@ -27,7 +27,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -38,8 +38,17 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class MenuAIService {
-    private final ChatClient.Builder chatClientBuilder;
+    private final ChatClient chatClient;
     private final DishRepository dishRepository;
+    // Helper method to convert DishDTO to Dish entity
+    private Dish convertToEntity(AIDishDTO dto) {
+        Dish dish = new Dish();
+        dish.setName(dto.getName());
+        dish.setCategory(Dish.Category.valueOf(dto.getCategory()));
+        dish.setPrice(new Price(dto.getPrice(), "PLN"));
+        dish.setAllergens(dto.getAllergens());
+        return dish;
+    }
 
 
     public List<Dish> parseMenuFromImage(byte[] imageBytes){
@@ -93,12 +102,12 @@ public class MenuAIService {
             """;
         int maxRetries = 5;
         List<AIDishDTO> AIdishDTOs = new ArrayList<>();
-        // main query to the LLM with image and prompt, automatically deserializing response to List<DishDTO>
-        for(int i = 0; i < 5; i++) {
-            System.out.println("sending menu to AI - attempt" + i + "/" + maxRetries);
 
+        // main query to the LLM with image and prompt, automatically deserializing response to List<DishDTO>
+        for(int i = 0; i < maxRetries; i++) {
+            System.out.println("sending menu to AI - attempt" + i + "/" + maxRetries);
             try {
-                AIdishDTOs = chatClientBuilder.build()
+                AIdishDTOs = chatClient
                         .prompt()
                         .user(userSpec -> userSpec
                                 .text(prompt)
@@ -114,15 +123,12 @@ public class MenuAIService {
                 log.error("Error when sending request to gpt api: {}", e.getMessage());
                 continue;
             }
-            if(!AIdishDTOs.isEmpty()) {
-                System.out.println("successfully got valid response from gpt api");
-                break;
+
+            if (AIdishDTOs.isEmpty()) {
+                throw new RuntimeException("Empty response from AI");
             }
         }
-        if(AIdishDTOs.isEmpty()) {
-            log.error("failed to get valid response from gpt api after " + maxRetries + " attempts, returning empty menu. If no errors returned before, there was probably no items visible in the photo");
-            return new ArrayList<Dish>();
-        }
+
         // Convert DishDTOs to Dish entities and save them to the database
         List<Dish> savedDishes = new ArrayList<>();
         for (AIDishDTO dto : AIdishDTOs) {
@@ -133,15 +139,6 @@ public class MenuAIService {
         return savedDishes;
     }
 
-    // Helper method to convert DishDTO to Dish entity
-    private Dish convertToEntity(AIDishDTO dto) {
-        Dish dish = new Dish();
-        dish.setName(dto.getName());
-        dish.setCategory(Dish.Category.valueOf(dto.getCategory()));
-        dish.setPrice(new Price(dto.getPrice(), "PLN"));
-        dish.setAllergens(dto.getAllergens());
-        return dish;
-    }
 }
 
 
