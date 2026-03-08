@@ -114,13 +114,14 @@ public class MenuAIService {
                 log.error("Error when sending request to gpt api: {}", e.getMessage());
                 continue;
             }
-            if(i < maxRetries-1 && !AIdishDTOs.isEmpty()) {
+            if(!AIdishDTOs.isEmpty()) {
                 System.out.println("successfully got valid response from gpt api");
                 break;
-            } else {
-                log.error("failed to get valid response from gpt api after " + maxRetries + " attempts, returning empty menu. If no errors returned before, there was probably no items visible in the photo");
-                return new ArrayList<Dish>();
             }
+        }
+        if(AIdishDTOs.isEmpty()) {
+            log.error("failed to get valid response from gpt api after " + maxRetries + " attempts, returning empty menu. If no errors returned before, there was probably no items visible in the photo");
+            return new ArrayList<Dish>();
         }
         // Convert DishDTOs to Dish entities and save them to the database
         List<Dish> savedDishes = new ArrayList<>();
