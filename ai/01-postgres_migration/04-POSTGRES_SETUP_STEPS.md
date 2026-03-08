@@ -34,7 +34,7 @@ Move it to `src/main/resources/db/migration/`:
 mv V1__init_schema.sql src/main/resources/db/migration/V1__init_schema.sql
 ```
 
-Remove the three temporary lines from `application-dev.properties`.
+Remove all four temporary lines from `application-dev.properties`.
 
 ---
 

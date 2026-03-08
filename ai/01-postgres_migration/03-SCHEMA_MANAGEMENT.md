@@ -9,6 +9,7 @@ DDL, let Hibernate generate it for you.
 Add these properties temporarily to your dev config, run the app once, then remove them:
 
 ```properties
+spring.flyway.enabled=false
 spring.jpa.properties.javax.persistence.schema-generation.scripts.action=create
 spring.jpa.properties.javax.persistence.schema-generation.scripts.create-target=V1__init_schema.sql
 spring.jpa.hibernate.ddl-auto=create

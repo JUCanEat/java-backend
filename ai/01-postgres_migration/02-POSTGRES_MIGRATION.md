@@ -109,7 +109,7 @@ The actual URL/credentials come from the K8s Secret via env vars.
 Add the `postgres` service and wire `java-backend` to it:
 ```yaml
 postgres:
-  image: postgres:16
+  image: postgres:17
   environment:
     POSTGRES_DB: jucaneat
     POSTGRES_USER: postgres

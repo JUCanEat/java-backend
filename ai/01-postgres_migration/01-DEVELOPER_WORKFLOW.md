@@ -25,16 +25,16 @@ Then run the backend from your IDE or terminal (`dev` profile). The app connects
 mvn test
 ```
 
-Repository and integration tests use **Testcontainers**, which spins up a real PostgreSQL Docker container automatically for the test run and tears it down when done. Flyway migrations run inside that container, so tests always run against the real schema.
+Tests currently use an **H2 in-memory database** with Flyway disabled. Hibernate manages the schema directly via `ddl-auto=create-drop`, creating a fresh schema at the start of each test run and dropping it at the end. This is configured in `src/test/resources/application.properties`.
 
 **What you need to worry about:**
-- Docker must be running (for Testcontainers)
-- If you added a migration file, tests automatically pick it up — no extra work needed
+- Nothing — no external database or Docker required to run tests
 
 **What is taken care of:**
-- No external database required
 - Tests are fully isolated — each run starts from a clean schema
-- CI runs these same tests identically
+- CI runs these same tests identically without any database infrastructure
+
+> **Planned:** Once Flyway is confirmed working end-to-end, the test setup will be migrated to **Testcontainers**, which spins up a real PostgreSQL Docker container automatically for the test run and tears it down when done. Flyway migrations will run inside that container, so tests will always run against the real schema. When that is done, Docker must be running to execute tests, and the `src/test/resources/application.properties` override will be removed.
 
 ---
 

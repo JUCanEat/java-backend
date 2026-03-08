@@ -1,4 +1,32 @@
 services:
+  java-backend:
+    image: haniazipser2004/awesome-amazing-project:latest
+    ports:
+      - "8080:8080"
+    pull_policy: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+      elasticSearch:
+        condition: service_started
+    environment:
+      - SPRING_PROFILES_ACTIVE=compose
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://localhost:8081/realms/JuCanEat
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/realms/JuCanEat/protocol/openid-connect/certs
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=admin
+      - SPRING_RABBITMQ_PASSWORD=admin
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=DEBUG
+      - KEYCLOAK_AUTH_SERVER_URL=http://localhost:8081
+      - KEYCLOAK_REALM=JuCanEat
+    extra_hosts:
+      - "localhost:host-gateway" # makes localhost in container resolve to host IP
+
   postgres:
     image: postgres:17
     environment:
