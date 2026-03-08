@@ -12,4 +12,6 @@ import java.util.UUID;
 public interface DailyMenuRepository extends JpaRepository<DailyMenu, UUID> {
 
     Optional<DailyMenu> findByRestaurantIdAndStatus(UUID id, DailyMenu.Status status);
+    int countByRestaurantIdAndStatus(UUID id, DailyMenu.Status status);
+    void deleteByRestaurantIdAndStatus(UUID id, DailyMenu.Status status);
 }

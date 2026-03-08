@@ -1,15 +1,17 @@
 services:
   java-backend:
-    image: haniazipser2004/awesome-amazing-project:latest
+    build:
+      context: ..
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
-    pull_policy: always
     depends_on:
       - keycloak
       - rabbitmq
       - elasticSearch
     environment:
       - SPRING_PROFILES_ACTIVE=compose
+      - SPRING_AI_OPENAI_API_KEY=dupa
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://localhost:8081/realms/JuCanEat
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/realms/JuCanEat/protocol/openid-connect/certs
       - SPRING_RABBITMQ_HOST=rabbitmq

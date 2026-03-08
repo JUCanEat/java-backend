@@ -73,10 +73,19 @@ public class MenuService {
         DailyMenu menu = new DailyMenu();
         menu.setRestaurant(restaurant);
         menu.setDate(today);
+
         menu.setStatus(DailyMenu.Status.PROCESSING);
         menu.setOriginalFileName(image.getOriginalFilename());
 
+        // check if there is existing processed menu;
+        // no check against PROCESSING, deleting it would not prevent the in-memory
+        // one from being saved as draft - and then the draft would be our demise.
+
+        // todo: test by asserting deletion was called
+        dailyMenuRepository.deleteByRestaurantIdAndStatus(restaurantId, DailyMenu.Status.DRAFT);
+
         DailyMenu saved = dailyMenuRepository.save(menu);
+
         byte[] imageBytes;
         try {
             imageBytes= image.getBytes();
