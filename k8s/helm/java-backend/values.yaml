@@ -180,21 +180,6 @@ postgres:
 env:
   - name: SPRING_PROFILES_ACTIVE
     value: k8s
-  - name: SPRING_DATASOURCE_URL
-    valueFrom:
-      secretKeyRef:
-        name: postgres-credentials
-        key: url
-  - name: SPRING_DATASOURCE_USERNAME
-    valueFrom:
-      secretKeyRef:
-        name: postgres-credentials
-        key: username
-  - name: SPRING_DATASOURCE_PASSWORD
-    valueFrom:
-      secretKeyRef:
-        name: postgres-credentials
-        key: password
   - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI
     value: http://keycloak:8081/realms/JuCanEat
   - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI

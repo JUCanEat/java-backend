@@ -42,6 +42,21 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
 
           env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "java-backend.fullname" . }}-postgres-credentials
+                  key: url
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "java-backend.fullname" . }}-postgres-credentials
+                  key: username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "java-backend.fullname" . }}-postgres-credentials
+                  key: password
             {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
