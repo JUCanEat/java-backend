@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class MenuService {
     private final DailyMenuRepository dailyMenuRepository;
     private final RestaurantRepository restaurantRepository;
@@ -53,7 +54,6 @@ public class MenuService {
                 ));
     }
 
-    @Transactional
     public void uploadMenuImage(
             UUID restaurantId,
             MultipartFile image,
@@ -121,7 +121,7 @@ public class MenuService {
                         "Daily menu draft not found for restaurant: " + id
                 ));
     }
-    @Transactional
+
     public void updateAndApproveMenu(UUID restaurantId, DailyMenuDTO request, String ownerId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
