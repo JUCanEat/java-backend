@@ -7,7 +7,6 @@ services:
     depends_on:
       - keycloak
       - rabbitmq
-      - elasticSearch
     environment:
       - SPRING_PROFILES_ACTIVE=compose
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://localhost:8081/realms/JuCanEat
