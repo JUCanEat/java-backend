@@ -46,7 +46,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus.yaml:/etc/prometheus/prometheus.yaml
     depends_on:
       - java-backend
 
@@ -59,3 +59,4 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     depends_on:
       - prometheus
+
