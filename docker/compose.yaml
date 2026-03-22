@@ -46,7 +46,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./monitoring/prometheus.yaml:/etc/prometheus/prometheus.yaml
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     depends_on:
       - java-backend
 
@@ -54,6 +54,10 @@ services:
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
+    volumes:
+      - ./monitoring/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./monitoring/dashboards:/var/lib/grafana/dashboards
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
