@@ -1319,7 +1319,7 @@
     "auth" : "true",
     "envelopeFrom" : "",
     "ssl" : "false",
-    "password" : "nxlencezdousapbv",
+    "password" : "ENTER_SMTP_PASSWORD",
     "port" : "587",
     "replyTo" : "",
     "host" : "smtp.gmail.com",
