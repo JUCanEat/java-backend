@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class MenuService {
     private final DailyMenuRepository dailyMenuRepository;
     private final RestaurantRepository restaurantRepository;
@@ -53,7 +54,6 @@ public class MenuService {
                 ));
     }
 
-    @Transactional
     public void uploadMenuImage(
             UUID restaurantId,
             MultipartFile image,
@@ -73,10 +73,19 @@ public class MenuService {
         DailyMenu menu = new DailyMenu();
         menu.setRestaurant(restaurant);
         menu.setDate(today);
+
         menu.setStatus(DailyMenu.Status.PROCESSING);
         menu.setOriginalFileName(image.getOriginalFilename());
 
+        // check if there is existing processed menu;
+        // no check against PROCESSING, deleting it would not prevent the in-memory
+        // one from being saved as draft - and then the draft would be our demise.
+
+        // todo: test by asserting deletion was called
+        dailyMenuRepository.deleteByRestaurantIdAndStatus(restaurantId, DailyMenu.Status.DRAFT);
+
         DailyMenu saved = dailyMenuRepository.save(menu);
+
         byte[] imageBytes;
         try {
             imageBytes= image.getBytes();
@@ -112,7 +121,7 @@ public class MenuService {
                         "Daily menu draft not found for restaurant: " + id
                 ));
     }
-    @Transactional
+
     public void updateAndApproveMenu(UUID restaurantId, DailyMenuDTO request, String ownerId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
