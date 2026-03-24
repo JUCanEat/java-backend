@@ -32,7 +32,7 @@
   "registrationAllowed" : true,
   "registrationEmailAsUsername" : true,
   "rememberMe" : false,
-  "verifyEmail" : false,
+  "verifyEmail" : true,
   "loginWithEmailAllowed" : true,
   "duplicateEmailsAllowed" : false,
   "resetPasswordAllowed" : true,
@@ -395,7 +395,6 @@
   "webAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister" : false,
   "webAuthnPolicyPasswordlessAcceptableAaguids" : [ ],
   "webAuthnPolicyPasswordlessExtraOrigins" : [ ],
-  "users" : [ ],
   "scopeMappings" : [ {
     "clientScope" : "offline_access",
     "roles" : [ "offline_access" ]
@@ -1314,7 +1313,20 @@
     "xXSSProtection" : "1; mode=block",
     "strictTransportSecurity" : "max-age=31536000; includeSubDomains"
   },
-  "smtpServer" : { },
+  "smtpServer" : {
+    "replyToDisplayName" : "",
+    "starttls" : "true",
+    "auth" : "true",
+    "envelopeFrom" : "",
+    "ssl" : "false",
+    "password" : "ENTER_SMTP_PASSWORD",
+    "port" : "587",
+    "replyTo" : "",
+    "host" : "smtp.gmail.com",
+    "from" : "noreply.jucaneat@gmail.com",
+    "fromDisplayName" : "JuCanEat",
+    "user" : "noreply.jucaneat@gmail.com"
+  },
   "loginTheme" : "jucaneat",
   "accountTheme" : "",
   "adminTheme" : "",
@@ -1349,7 +1361,7 @@
     }
   } ],
   "identityProviderMappers" : [ {
-    "id" : "4aba1cab-fd33-413f-b447-19bea8c9052c",
+    "id" : "361e4000-65b2-45aa-9661-807b6b5c74b2",
     "name" : "given_name",
     "identityProviderAlias" : "google",
     "identityProviderMapper" : "google-user-attribute-mapper",
@@ -1358,7 +1370,7 @@
       "userAttribute" : "firstName"
     }
   }, {
-    "id" : "fa5c0388-4f2d-4e5d-ae28-fd04d7184284",
+    "id" : "0d0baf1f-ab27-4c6c-89f2-748d3b96592a",
     "name" : "email",
     "identityProviderAlias" : "google",
     "identityProviderMapper" : "google-user-attribute-mapper",
@@ -1367,7 +1379,7 @@
       "userAttribute" : "email"
     }
   }, {
-    "id" : "7d9651a7-331f-4f0c-9bc7-49960850913e",
+    "id" : "eb1ece3a-a486-456c-90f7-52c61d395b12",
     "name" : "family_name",
     "identityProviderAlias" : "google",
     "identityProviderMapper" : "google-user-attribute-mapper",
@@ -1402,7 +1414,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-usermodel-attribute-mapper", "oidc-usermodel-property-mapper", "saml-user-attribute-mapper", "oidc-full-name-mapper", "saml-role-list-mapper", "oidc-address-mapper", "oidc-sha256-pairwise-sub-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-usermodel-property-mapper", "saml-role-list-mapper", "oidc-full-name-mapper", "oidc-usermodel-attribute-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-attribute-mapper", "oidc-address-mapper", "saml-user-property-mapper" ]
       }
     }, {
       "id" : "35c4c61b-7e2b-4816-abf4-c63f38f862a9",
@@ -1411,7 +1423,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-property-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "saml-user-property-mapper", "oidc-full-name-mapper", "saml-user-attribute-mapper", "oidc-address-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper", "saml-user-attribute-mapper", "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper" ]
       }
     }, {
       "id" : "ad218a12-0a96-499e-bc19-d8fcba884cdd",
@@ -2130,7 +2142,7 @@
     "alias" : "VERIFY_EMAIL",
     "name" : "Verify Email",
     "providerId" : "VERIFY_EMAIL",
-    "enabled" : false,
+    "enabled" : true,
     "defaultAction" : false,
     "priority" : 50,
     "config" : { }
