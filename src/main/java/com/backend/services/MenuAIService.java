@@ -19,6 +19,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,6 +43,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class MenuAIService {
+
     private final ChatClient chatClient;
     private final DishRepository dishRepository;
     // Helper method to convert DishDTO to Dish entity
@@ -50,8 +56,15 @@ public class MenuAIService {
         return dish;
     }
 
-
+    @Retryable(
+            retryFor = Exception.class,
+            maxAttempts = 5,
+            backoff = @Backoff(delay = 1000, multiplier = 2)  // 1s, 2s, 4s, 8s
+    )
     public List<Dish> parseMenuFromImage(byte[] imageBytes){
+        int attempt = RetrySynchronizationManager.getContext().getRetryCount() + 1;
+        log.info("Sending menu to AI - attempt {}/5", attempt);
+
         String prompt = """
             You are a specialized menu digitization assistant for Polish restaurants. Analyze the provided image of a handwritten menu and extract ALL visible items.
             
@@ -100,33 +113,23 @@ public class MenuAIService {
             
             Return only the JSON array of dishes.
             """;
-        int maxRetries = 5;
-        List<AIDishDTO> AIdishDTOs = new ArrayList<>();
 
-        // main query to the LLM with image and prompt, automatically deserializing response to List<DishDTO>
-        for(int i = 0; i < maxRetries; i++) {
-            System.out.println("sending menu to AI - attempt" + i + "/" + maxRetries);
-            try {
-                AIdishDTOs = chatClient
-                        .prompt()
-                        .user(userSpec -> userSpec
-                                .text(prompt)
-                                .media(Media.builder()
-                                        .mimeType(MimeTypeUtils.IMAGE_JPEG)
-                                        .data(new ByteArrayResource(imageBytes))
-                                        .build()))
-                        .call()
-                        .entity(new ParameterizedTypeReference<List<AIDishDTO>>() {
-                        });
-            } catch (Exception e) {
-                System.out.println("gpt api request failed try" + i + "/" + maxRetries);
-                log.error("Error when sending request to gpt api: {}", e.getMessage());
-                continue;
-            }
+        List<AIDishDTO> AIdishDTOs;
 
-            if (AIdishDTOs.isEmpty()) {
-                throw new RuntimeException("Empty response from AI");
-            }
+        AIdishDTOs = chatClient
+                .prompt()
+                .user(userSpec -> userSpec
+                        .text(prompt)
+                        .media(Media.builder()
+                                .mimeType(MimeTypeUtils.IMAGE_JPEG)
+                                .data(new ByteArrayResource(imageBytes))
+                                .build()))
+                .call()
+                .entity(new ParameterizedTypeReference<List<AIDishDTO>>() {
+                });
+
+        if (AIdishDTOs.isEmpty()) {
+            throw new IllegalStateException("Empty response from GPT - no dishes extracted");
         }
 
         // Convert DishDTOs to Dish entities and save them to the database
@@ -136,7 +139,14 @@ public class MenuAIService {
             Dish savedDish = dishRepository.save(dish);
             savedDishes.add(savedDish);
         }
+        log.info("Successfully parsed and saved {} dishes from image", savedDishes.size());
         return savedDishes;
+    }
+
+    @Recover
+    public List<Dish> recover(Exception e, byte[] imageBytes) {
+        log.error("All GPT retry attempts exhausted: {}", e.getMessage());
+        return Collections.emptyList();
     }
 
 }
