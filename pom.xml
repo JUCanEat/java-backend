@@ -96,6 +96,8 @@
 			<artifactId>micrometer-registry-prometheus</artifactId>
 		</dependency>
 
+
+
 	</dependencies>
 
 	<dependencyManagement>
@@ -107,6 +109,52 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-codec-http2</artifactId>
+				<version>4.1.124.Final</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-core</artifactId>
+				<version>2.21.1</version>
+			</dependency>
+
+			<!-- Tomcat -->
+			<dependency>
+				<groupId>org.apache.tomcat.embed</groupId>
+				<artifactId>tomcat-embed-core</artifactId>
+				<version>10.1.45</version>
+			</dependency>
+
+			<!-- Spring Boot -->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot</artifactId>
+				<version>3.4.5</version>
+			</dependency>
+
+			<!-- Spring Security -->
+			<dependency>
+				<groupId>org.springframework.security</groupId>
+				<artifactId>spring-security-core</artifactId>
+				<version>6.4.10</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.security</groupId>
+				<artifactId>spring-security-crypto</artifactId>
+				<version>6.4.4</version>
+			</dependency>
+
+			<!-- Spring Core -->
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-core</artifactId>
+				<version>6.2.11</version>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 
