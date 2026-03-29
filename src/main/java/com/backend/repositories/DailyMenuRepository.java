@@ -13,6 +13,7 @@ import java.util.UUID;
 public interface DailyMenuRepository extends JpaRepository<DailyMenu, UUID> {
 
     List<DailyMenu> findAllByStatusAndDate(DailyMenu.Status status, LocalDate date);
+    List<DailyMenu> findByRestaurantIdAndStatusInOrderByDateAsc(UUID restaurantId, List<DailyMenu.Status> statuses);
     Optional<DailyMenu> findByRestaurantIdAndStatus(UUID id, DailyMenu.Status status);
     Optional<DailyMenu> findByRestaurantIdAndStatusAndDate(UUID id, DailyMenu.Status status, LocalDate date);
     Optional<DailyMenu> findByIdAndRestaurantId(UUID menuId, UUID restaurantId);

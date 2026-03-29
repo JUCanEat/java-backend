@@ -52,28 +52,81 @@ public class MenuService {
                 ));
     }
 
-    public LocalizedDailyMenuDTO getLocalizedDailyMenuByRestaurantId(UUID id, String languageHeader) {
+    public LocalizedDailyMenuDTO getLocalizedDailyMenuByRestaurantId(UUID id, String language) {
         DailyMenuDTO dailyMenu = getDailyMenuByRestaurantId(id);
 
         List<UUID> dishIds = dailyMenu.getDishes().stream()
                 .map(dish -> dish.getId())
                 .collect(Collectors.toList());
 
-        var localizedNames = dishTranslationService.getDishNamesByLanguage(dishIds, languageHeader);
+        var localizedNames = dishTranslationService.getDishNamesByLanguage(dishIds, language);
 
         List<LocalizedDishDTO> localizedDishes = dailyMenu.getDishes().stream()
                 .map(dish -> new LocalizedDishDTO(
                         dish,
-                        localizedNames.getOrDefault(dish.getId(), dish.getName())
+                        localizedNames.getOrDefault(dish.getId(), dish.getName()),
+                        dish.getPrice()
                 ))
                 .collect(Collectors.toList());
 
         return new LocalizedDailyMenuDTO(
                 dailyMenu.getId(),
                 dailyMenu.getDate(),
-                dishTranslationService.resolveLanguageCode(languageHeader),
+                dishTranslationService.resolveLanguageCode(language),
                 localizedDishes
         );
+    }
+
+    public List<DailyMenuDTO> getScheduledAndActiveMenusByRestaurantId(UUID restaurantId) {
+                if (!restaurantRepository.existsById(restaurantId)) {
+                        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found");
+                }
+
+        List<DailyMenu> menus = dailyMenuRepository.findByRestaurantIdAndStatusInOrderByDateAsc(
+                restaurantId,
+                List.of(DailyMenu.Status.SCHEDULED, DailyMenu.Status.ACTIVE)
+        );
+
+        return menus.stream()
+                .map(DailyMenuDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<LocalizedDailyMenuDTO> getLocalizedScheduledAndActiveMenusByRestaurantId(UUID restaurantId, String language) {
+        if (!restaurantRepository.existsById(restaurantId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found");
+        }
+
+        List<DailyMenuDTO> menus = dailyMenuRepository.findByRestaurantIdAndStatusInOrderByDateAsc(
+                        restaurantId,
+                        List.of(DailyMenu.Status.SCHEDULED, DailyMenu.Status.ACTIVE)
+                ).stream()
+                .map(DailyMenuDTO::new)
+                .collect(Collectors.toList());
+
+        List<UUID> dishIds = menus.stream()
+                .flatMap(menu -> menu.getDishes().stream())
+                .map(dish -> dish.getId())
+                .distinct()
+                .collect(Collectors.toList());
+
+        var localizedNames = dishTranslationService.getDishNamesByLanguage(dishIds, language);
+        String resolvedLanguage = dishTranslationService.resolveLanguageCode(language);
+
+        return menus.stream()
+                .map(menu -> new LocalizedDailyMenuDTO(
+                        menu.getId(),
+                        menu.getDate(),
+                        resolvedLanguage,
+                        menu.getDishes().stream()
+                                .map(dish -> new LocalizedDishDTO(
+                                        dish,
+                                        localizedNames.getOrDefault(dish.getId(), dish.getName()),
+                                        dish.getPrice()
+                                ))
+                                .collect(Collectors.toList())
+                ))
+                .collect(Collectors.toList());
     }
 
     public void uploadMenuImage(

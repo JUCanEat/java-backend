@@ -16,10 +16,12 @@ import java.util.stream.Collectors;
 public class DailyMenuDTO {
     private UUID id;
     private LocalDate date;
+    private String status;
     private List<DishDTO> dishes;
     public DailyMenuDTO(DailyMenu dailyMenu) {
         this.id = dailyMenu.getId();
         this.date = dailyMenu.getDate();
+        this.status = dailyMenu.getStatus().name();
         this.dishes = dailyMenu.getDishes().stream()
                 .map(DishDTO::new)
                 .collect(Collectors.toList());

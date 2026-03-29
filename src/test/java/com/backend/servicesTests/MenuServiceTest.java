@@ -86,6 +86,39 @@ class MenuServiceTest {
                 .hasMessageContaining("not found");
     }
 
+        @Test
+        void shouldReturnScheduledAndActiveMenus() {
+                DailyMenu scheduled = new DailyMenu();
+                scheduled.setId(UUID.randomUUID());
+                scheduled.setDate(LocalDate.now().plusDays(1));
+                scheduled.setStatus(DailyMenu.Status.SCHEDULED);
+
+                DailyMenu active = new DailyMenu();
+                active.setId(UUID.randomUUID());
+                active.setDate(LocalDate.now());
+                active.setStatus(DailyMenu.Status.ACTIVE);
+
+                when(restaurantRepository.existsById(restaurantId)).thenReturn(true);
+                when(dailyMenuRepository.findByRestaurantIdAndStatusInOrderByDateAsc(
+                                eq(restaurantId), anyList()))
+                                .thenReturn(List.of(active, scheduled));
+
+                List<DailyMenuDTO> result = menuService.getScheduledAndActiveMenusByRestaurantId(restaurantId);
+
+                assertThat(result).isNotNull();
+                verify(restaurantRepository).existsById(restaurantId);
+                verify(dailyMenuRepository).findByRestaurantIdAndStatusInOrderByDateAsc(eq(restaurantId), anyList());
+        }
+
+        @Test
+        void shouldThrowWhenRestaurantNotFoundForPlannedMenus() {
+                when(restaurantRepository.existsById(restaurantId)).thenReturn(false);
+
+                assertThatThrownBy(() -> menuService.getScheduledAndActiveMenusByRestaurantId(restaurantId))
+                                .isInstanceOf(ResponseStatusException.class)
+                                .hasMessageContaining("Restaurant not found");
+        }
+
 
     @Test
     void shouldUploadMenuImageSuccessfully() throws IOException {

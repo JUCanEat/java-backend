@@ -82,7 +82,7 @@ public class MenuController {
 
         @Operation(
                         summary = "Get restaurant daily menu in requested language",
-                        description = "Retrieves today's published menu translated according to Accept-Language header (PL/EN)."
+                        description = "Retrieves today's published menu translated according to language parameter (PL/EN)."
         )
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Successfully retrieved localized daily menu"),
@@ -92,11 +92,50 @@ public class MenuController {
         public ResponseEntity<LocalizedDailyMenuDTO> getLocalizedDailyMenuByRestaurantId(
                         @Parameter(description = "Id of the restaurant", required = true)
                         @PathVariable UUID id,
-                        @RequestHeader(value = "Accept-Language", required = false) String languageHeader) {
+                        @Parameter(description = "Language code (PL or EN)", required = false)
+                        @RequestParam(value = "language", required = false) String language) {
 
-                LocalizedDailyMenuDTO dailyMenu = menuService.getLocalizedDailyMenuByRestaurantId(id, languageHeader);
+                LocalizedDailyMenuDTO dailyMenu = menuService.getLocalizedDailyMenuByRestaurantId(id, language);
                 return ResponseEntity.ok(dailyMenu);
         }
+
+    @Operation(
+            summary = "Get all active and scheduled menus by restaurant ID",
+            description = "Retrieves all menus for given restaurant that are currently ACTIVE or SCHEDULED."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved menus"),
+            @ApiResponse(responseCode = "404", description = "Restaurant not found")
+    })
+    @GetMapping("/{id}/planned")
+    @PreAuthorize("hasRole('restaurant_owner')")
+    public ResponseEntity<List<DailyMenuDTO>> getScheduledAndActiveMenusByRestaurantId(
+            @Parameter(description = "Id of the restaurant", required = true)
+            @PathVariable UUID id) {
+
+        List<DailyMenuDTO> menus = menuService.getScheduledAndActiveMenusByRestaurantId(id);
+        return ResponseEntity.ok(menus);
+    }
+
+    @Operation(
+            summary = "Get all active and scheduled menus by restaurant ID in requested language",
+            description = "Retrieves all ACTIVE and SCHEDULED menus for given restaurant translated according to language parameter (PL/EN)."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved localized menus"),
+            @ApiResponse(responseCode = "404", description = "Restaurant not found")
+    })
+    @GetMapping("/{id}/planned/localized")
+    @PreAuthorize("hasRole('restaurant_owner')")
+    public ResponseEntity<List<LocalizedDailyMenuDTO>> getLocalizedScheduledAndActiveMenusByRestaurantId(
+            @Parameter(description = "Id of the restaurant", required = true)
+            @PathVariable UUID id,
+            @Parameter(description = "Language code (PL or EN)", required = false)
+            @RequestParam(value = "language", required = false) String language) {
+
+        List<LocalizedDailyMenuDTO> menus = menuService.getLocalizedScheduledAndActiveMenusByRestaurantId(id, language);
+        return ResponseEntity.ok(menus);
+    }
 
     @Operation(
             summary = "Process daily menu image for restaurant by ID",
