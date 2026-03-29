@@ -2,6 +2,8 @@ package com.backend.services;
 
 import com.backend.config.RabbitMQConfig;
 import com.backend.model.dtos.DailyMenuDTO;
+import com.backend.model.dtos.LocalizedDailyMenuDTO;
+import com.backend.model.dtos.LocalizedDishDTO;
 import com.backend.model.dtos.MessageDTO;
 import com.backend.model.entities.DailyMenu;
 import com.backend.model.entities.Dish;
@@ -35,6 +37,7 @@ public class MenuService {
     private final RestaurantRepository restaurantRepository;
     private final RabbitTemplate rabbitTemplate;
     private final DishRepository dishRepository;
+        private final DishTranslationService dishTranslationService;
     //private final MenuAIService menuAIService; //Musisz to alek napisać
 
     public DailyMenuDTO getDailyMenuByRestaurantId(UUID id) { //TO DO : ADD UNIQUE CONSTRAINT IN DB ON DAILY MENU + ACTIVE
@@ -47,6 +50,30 @@ public class MenuService {
                         HttpStatus.NOT_FOUND,
                         "Daily menu not found for restaurant: " + id + " and date: " + today
                 ));
+    }
+
+    public LocalizedDailyMenuDTO getLocalizedDailyMenuByRestaurantId(UUID id, String languageHeader) {
+        DailyMenuDTO dailyMenu = getDailyMenuByRestaurantId(id);
+
+        List<UUID> dishIds = dailyMenu.getDishes().stream()
+                .map(dish -> dish.getId())
+                .collect(Collectors.toList());
+
+        var localizedNames = dishTranslationService.getDishNamesByLanguage(dishIds, languageHeader);
+
+        List<LocalizedDishDTO> localizedDishes = dailyMenu.getDishes().stream()
+                .map(dish -> new LocalizedDishDTO(
+                        dish,
+                        localizedNames.getOrDefault(dish.getId(), dish.getName())
+                ))
+                .collect(Collectors.toList());
+
+        return new LocalizedDailyMenuDTO(
+                dailyMenu.getId(),
+                dailyMenu.getDate(),
+                dishTranslationService.resolveLanguageCode(languageHeader),
+                localizedDishes
+        );
     }
 
     public void uploadMenuImage(
@@ -117,7 +144,11 @@ public class MenuService {
                 ));
     }
 
-    public void updateAndApproveMenu(UUID restaurantId, DailyMenuDTO request, String ownerId) {
+        public void updateAndApproveMenu(UUID restaurantId, DailyMenuDTO request, String ownerId) {
+                updateAndApproveMenu(restaurantId, request, ownerId, "pl");
+        }
+
+        public void updateAndApproveMenu(UUID restaurantId, DailyMenuDTO request, String ownerId, String sourceLanguageHeader) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Restaurant not found"));
@@ -164,7 +195,8 @@ public class MenuService {
                         dish.setName(dto.getName());
                         dish.setPrice(new Price(dto.getPrice(), "PLN"));
                         dish.setAllergens(dto.getAllergens());
-                        dishRepository.save(dish);
+                                                dishRepository.save(dish);
+                                                dishTranslationService.upsertBothLanguages(dish, dto.getName(), sourceLanguageHeader);
                         //aiservice.index(dish)
                         return dish;
                     })

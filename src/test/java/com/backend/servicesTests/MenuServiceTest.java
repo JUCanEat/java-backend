@@ -10,6 +10,7 @@ import com.backend.model.entities.User;
 import com.backend.repositories.DailyMenuRepository;
 import com.backend.repositories.DishRepository;
 import com.backend.repositories.RestaurantRepository;
+import com.backend.services.DishTranslationService;
 import com.backend.services.MenuService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,7 @@ class MenuServiceTest {
     @Mock private RestaurantRepository restaurantRepository;
     @Mock private RabbitTemplate rabbitTemplate;
     @Mock private DishRepository dishRepository;
+        @Mock private DishTranslationService dishTranslationService;
 
     @InjectMocks private MenuService menuService;
 
