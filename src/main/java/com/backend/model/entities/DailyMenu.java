@@ -45,7 +45,7 @@ public class DailyMenu {
 
 
     public enum Status {
-        ACTIVE, INACTIVE, PROCESSING, DRAFT, FAILED
+        ACTIVE, SCHEDULED, INACTIVE, PROCESSING, DRAFT, FAILED
     }
 
     public boolean isActive(){

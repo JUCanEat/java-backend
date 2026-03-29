@@ -3,11 +3,9 @@ package com.backend.services;
 import com.backend.config.RabbitMQConfig;
 import com.backend.model.dtos.DailyMenuDTO;
 import com.backend.model.dtos.MessageDTO;
-import com.backend.model.dtos.RestaurantDetailsDTO;
 import com.backend.model.entities.DailyMenu;
 import com.backend.model.entities.Dish;
 import com.backend.model.entities.Restaurant;
-import com.backend.model.entities.User;
 import com.backend.model.valueObjects.Price;
 import com.backend.repositories.DailyMenuRepository;
 import com.backend.repositories.DishRepository;
@@ -15,7 +13,6 @@ import com.backend.repositories.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -142,6 +139,10 @@ public class MenuService {
                     "Cannot publish or schedule a menu in the past");
         }
 
+        DailyMenu.Status targetStatus = targetDate.isAfter(LocalDate.now())
+                ? DailyMenu.Status.SCHEDULED
+                : DailyMenu.Status.ACTIVE;
+
         Optional<DailyMenu> processingMenu = dailyMenuRepository
                 .findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.PROCESSING, targetDate);
 
@@ -150,8 +151,8 @@ public class MenuService {
                     "Menu is currently being processed by OCR. Please wait for processing to complete.");
         }
 
-                DailyMenu menu = resolveMenuToUpdate(restaurantId, request, targetDate, restaurant);
-                menu.setDate(targetDate);
+        DailyMenu menu = resolveMenuToUpdate(restaurantId, request, targetDate, restaurant);
+        menu.setDate(targetDate);
 
         if (request.getDishes() != null && !request.getDishes().isEmpty()) {
             menu.getDishes().clear();
@@ -172,48 +173,57 @@ public class MenuService {
             menu.getDishes().addAll(updatedDishes);
         }
 
-                Optional<DailyMenu> previousMenuForDate = dailyMenuRepository
-                                .findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.ACTIVE, targetDate);
-                if (previousMenuForDate.isPresent() && (menu.getId() == null || !previousMenuForDate.get().getId().equals(menu.getId()))) {
-                        previousMenuForDate.get().setStatus(DailyMenu.Status.INACTIVE);
-                        dailyMenuRepository.save(previousMenuForDate.get());
+        Optional<DailyMenu> previousMenuForDate = dailyMenuRepository
+                .findByRestaurantIdAndStatusAndDate(restaurantId, targetStatus, targetDate);
+        if (previousMenuForDate.isPresent() && (menu.getId() == null || !previousMenuForDate.get().getId().equals(menu.getId()))) {
+            previousMenuForDate.get().setStatus(DailyMenu.Status.INACTIVE);
+            dailyMenuRepository.save(previousMenuForDate.get());
         }
 
-        menu.setStatus(DailyMenu.Status.ACTIVE);
+        menu.setStatus(targetStatus);
         dailyMenuRepository.save(menu);
     }
 
-        private DailyMenu resolveMenuToUpdate(UUID restaurantId, DailyMenuDTO request, LocalDate targetDate, Restaurant restaurant) {
-                if (request.getId() != null) {
-                        DailyMenu menuById = dailyMenuRepository.findByIdAndRestaurantId(request.getId(), restaurantId)
-                                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                                                        "Menu not found for provided id"));
+    private DailyMenu resolveMenuToUpdate(UUID restaurantId, DailyMenuDTO request, LocalDate targetDate, Restaurant restaurant) {
+        if (request.getId() != null) {
+            DailyMenu menuById = dailyMenuRepository.findByIdAndRestaurantId(request.getId(), restaurantId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                            "Menu not found for provided id"));
 
-                        if (menuById.getStatus() != DailyMenu.Status.DRAFT && menuById.getStatus() != DailyMenu.Status.ACTIVE) {
-                                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                                "Only draft or published menus can be edited");
-                        }
+            if (menuById.getStatus() != DailyMenu.Status.DRAFT
+                    && menuById.getStatus() != DailyMenu.Status.ACTIVE
+                    && menuById.getStatus() != DailyMenu.Status.SCHEDULED) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Only draft, published or scheduled menus can be edited");
+            }
 
-                        return menuById;
-                }
-
-                Optional<DailyMenu> draftForDate = dailyMenuRepository
-                                .findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.DRAFT, targetDate);
-
-                if (draftForDate.isPresent()) {
-                        return draftForDate.get();
-                }
-
-                Optional<DailyMenu> activeForDate = dailyMenuRepository
-                                .findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.ACTIVE, targetDate);
-
-                if (activeForDate.isPresent()) {
-                        return activeForDate.get();
-                }
-
-                DailyMenu menu = new DailyMenu();
-                menu.setRestaurant(restaurant);
-                menu.setDate(targetDate);
-                return menu;
+            return menuById;
         }
+
+        Optional<DailyMenu> draftForDate = dailyMenuRepository
+                .findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.DRAFT, targetDate);
+
+        if (draftForDate.isPresent()) {
+            return draftForDate.get();
+        }
+
+        Optional<DailyMenu> scheduledForDate = dailyMenuRepository
+                .findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.SCHEDULED, targetDate);
+
+        if (scheduledForDate.isPresent()) {
+            return scheduledForDate.get();
+        }
+
+        Optional<DailyMenu> activeForDate = dailyMenuRepository
+                .findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.ACTIVE, targetDate);
+
+        if (activeForDate.isPresent()) {
+            return activeForDate.get();
+        }
+
+        DailyMenu menu = new DailyMenu();
+        menu.setRestaurant(restaurant);
+        menu.setDate(targetDate);
+        return menu;
+    }
 }

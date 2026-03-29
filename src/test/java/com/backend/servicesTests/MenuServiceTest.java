@@ -348,11 +348,11 @@ class MenuServiceTest {
         ArgumentCaptor<DailyMenu> captor = ArgumentCaptor.forClass(DailyMenu.class);
         verify(dailyMenuRepository).save(captor.capture());
         assertThat(captor.getValue().getDate()).isEqualTo(futureDate);
-        assertThat(captor.getValue().getStatus()).isEqualTo(DailyMenu.Status.ACTIVE);
+                assertThat(captor.getValue().getStatus()).isEqualTo(DailyMenu.Status.SCHEDULED);
     }
 
     @Test
-    void shouldAllowEditingPublishedMenuById() {
+        void shouldAllowEditingScheduledMenuById() {
         User owner = new User();
         owner.setId("owner123");
         restaurant.setOwners(Set.of(owner));
@@ -360,18 +360,18 @@ class MenuServiceTest {
         LocalDate targetDate = LocalDate.now().plusDays(1);
         UUID menuId = UUID.randomUUID();
 
-        DailyMenu activeMenu = new DailyMenu();
-        activeMenu.setId(menuId);
-        activeMenu.setRestaurant(restaurant);
-        activeMenu.setStatus(DailyMenu.Status.ACTIVE);
-        activeMenu.setDate(targetDate);
+        DailyMenu scheduledMenu = new DailyMenu();
+        scheduledMenu.setId(menuId);
+        scheduledMenu.setRestaurant(restaurant);
+        scheduledMenu.setStatus(DailyMenu.Status.SCHEDULED);
+        scheduledMenu.setDate(targetDate);
 
         when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));
         when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.PROCESSING, targetDate))
                 .thenReturn(Optional.empty());
-        when(dailyMenuRepository.findByIdAndRestaurantId(menuId, restaurantId)).thenReturn(Optional.of(activeMenu));
-        when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.ACTIVE, targetDate))
-                .thenReturn(Optional.of(activeMenu));
+        when(dailyMenuRepository.findByIdAndRestaurantId(menuId, restaurantId)).thenReturn(Optional.of(scheduledMenu));
+        when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.SCHEDULED, targetDate))
+                .thenReturn(Optional.of(scheduledMenu));
 
         DishDTO dishDTO = new DishDTO();
         dishDTO.setName("Edited Pizza");
@@ -389,7 +389,7 @@ class MenuServiceTest {
         menuService.updateAndApproveMenu(restaurantId, request, "owner123");
 
         verify(dailyMenuRepository, never()).save(argThat(menu -> menu.getStatus() == DailyMenu.Status.INACTIVE));
-        verify(dailyMenuRepository).save(activeMenu);
+                verify(dailyMenuRepository).save(scheduledMenu);
     }
 
     @Test
