@@ -207,9 +207,9 @@ VALUES
 ------------------------------------------------------------
 
 INSERT INTO keycloak_user (id)
-VALUES (
-    'e8efd725-8397-4aea-979f-3c096470d23b'  -- This is subject from JWT Keycloak, with owner role!!!
-);
+VALUES
+    ('e8efd725-8397-4aea-979f-3c096470d23b'), -- This is subject from JWT Keycloak, with owner role!!!
+    ('17e0291d-75a1-40ae-ae78-7335ceadbfca');
 
 ------------------------------------------------------------
 -- RESTAURANT OWNERS' - USERS
@@ -217,6 +217,71 @@ VALUES (
 
 INSERT INTO restaurant_owners (restaurant_id, user_id)
 VALUES (
-    'b2a5f4de-8f39-4e3e-a51e-8c527ce7e1a1',  -- ID of Bistro Świetlica restaurant
-    'e8efd725-8397-4aea-979f-3c096470d23b'  -- ID of owner from users
-);
+           'b2a5f4de-8f39-4e3e-a51e-8c527ce7e1a1',  -- ID of Bistro Świetlica restaurant
+           'e8efd725-8397-4aea-979f-3c096470d23b'  -- ID of owner from users
+       );
+
+------------------------------------------------------------
+-- TEST RESTAURANT
+------------------------------------------------------------
+
+INSERT INTO location (id, latitude, longitude)
+VALUES (
+           'aaaaaaaa-1111-1111-1111-aaaaaaaaaaaa',
+           50.06143,
+           19.93658
+       );
+
+INSERT INTO facility (id, description, photo_path, location_id, facility_type, name)
+VALUES (
+           'bbbbbbbb-2222-2222-2222-bbbbbbbbbbbb',
+           'Test restaurant for development',
+           '/images/restaurants/test_restaurant.jpg',
+           'aaaaaaaa-1111-1111-1111-aaaaaaaaaaaa',
+           'RESTAURANT',
+           'TEST_RESTAURANT'
+       );
+
+INSERT INTO opening_hours (id, restaurant_id, day_of_week, open_time, close_time)
+VALUES
+    ('cccccccc-1111-1111-1111-cccccccccccc', 'bbbbbbbb-2222-2222-2222-bbbbbbbbbbbb', 'MONDAY',    '10:00', '18:00'),
+    ('cccccccc-2222-2222-2222-cccccccccccc', 'bbbbbbbb-2222-2222-2222-bbbbbbbbbbbb', 'TUESDAY',   '10:00', '18:00'),
+    ('cccccccc-3333-3333-3333-cccccccccccc', 'bbbbbbbb-2222-2222-2222-bbbbbbbbbbbb', 'WEDNESDAY', '10:00', '18:00'),
+    ('cccccccc-4444-4444-4444-cccccccccccc', 'bbbbbbbb-2222-2222-2222-bbbbbbbbbbbb', 'THURSDAY',  '10:00', '18:00'),
+    ('cccccccc-5555-5555-5555-cccccccccccc', 'bbbbbbbb-2222-2222-2222-bbbbbbbbbbbb', 'FRIDAY',    '10:00', '18:00');
+
+INSERT INTO daily_menu (id, date, status, restaurant_id)
+VALUES (
+           'dddddddd-1111-1111-1111-dddddddddddd',
+           CURRENT_DATE,
+           'ACTIVE',
+           'bbbbbbbb-2222-2222-2222-bbbbbbbbbbbb'
+       );
+
+INSERT INTO dish (id, name, category, amount, currency, restaurant_id)
+VALUES (
+           'eeeeeeee-1111-1111-1111-eeeeeeeeeeee',
+           'Test Pasta',
+           'MAIN_COURSE',
+           25.00,
+           'PLN',
+           'bbbbbbbb-2222-2222-2222-bbbbbbbbbbbb'
+       );
+
+INSERT INTO daily_menu_dishes (daily_menu_id, dish_id)
+VALUES (
+           'dddddddd-1111-1111-1111-dddddddddddd',
+           'eeeeeeee-1111-1111-1111-eeeeeeeeeeee'
+       );
+
+INSERT INTO dish_allergens (dish_id, allergen)
+VALUES
+    ('eeeeeeee-1111-1111-1111-eeeeeeeeeeee', 'GLUTEN'),
+    ('eeeeeeee-1111-1111-1111-eeeeeeeeeeee', 'LACTOSE'),
+    ('eeeeeeee-1111-1111-1111-eeeeeeeeeeee', 'MEAT');
+
+INSERT INTO restaurant_owners (restaurant_id, user_id)
+VALUES (
+           'bbbbbbbb-2222-2222-2222-bbbbbbbbbbbb',
+           '17e0291d-75a1-40ae-ae78-7335ceadbfca'
+       );

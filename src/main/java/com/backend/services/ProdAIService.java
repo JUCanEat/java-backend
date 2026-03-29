@@ -1,68 +1,35 @@
 package com.backend.services;
 
+import com.backend.model.dtos.AIDishDTO;
 import com.backend.model.entities.Dish;
 import com.backend.model.valueObjects.Price;
 import com.backend.repositories.DishRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.ObjectCodec;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.ai.content.Media;
-import org.springframework.ai.converter.BeanOutputConverter;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.EnableRetry;
-import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
-import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeTypeUtils;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
-
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Collectors;
-
+import java.util.List;
+import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class MenuAIService {
-
-    private final ChatClient chatClient;
+@Profile("!dev & !compose")
+public class ProdAIService implements MenuAIService {
+    private final ChatClient.Builder chatClientBuilder;
     private final DishRepository dishRepository;
-    // Helper method to convert DishDTO to Dish entity
-    private Dish convertToEntity(AIDishDTO dto) {
-        Dish dish = new Dish();
-        dish.setName(dto.getName());
-        dish.setCategory(Dish.Category.valueOf(dto.getCategory()));
-        dish.setPrice(new Price(dto.getPrice(), "PLN"));
-        dish.setAllergens(dto.getAllergens());
-        return dish;
-    }
 
-    @Retryable(
-            retryFor = Exception.class,
-            maxAttempts = 5,
-            backoff = @Backoff(delay = 1000, multiplier = 2)  // 1s, 2s, 4s, 8s
-    )
-    public List<Dish> parseMenuFromImage(byte[] imageBytes){
-        int attempt = RetrySynchronizationManager.getContext().getRetryCount() + 1;
-        log.info("Sending menu to AI - attempt {}/5", attempt);
 
+    public List<Dish> parseMenuFromImage(byte[] imageBytes) {
         String prompt = """
             You are a specialized menu digitization assistant for Polish restaurants. Analyze the provided image of a handwritten menu and extract ALL visible items.
             
@@ -111,25 +78,37 @@ public class MenuAIService {
             
             Return only the JSON array of dishes.
             """;
+        int maxRetries = 5;
+        List<AIDishDTO> AIdishDTOs = new ArrayList<>();
+        // main query to the LLM with image and prompt, automatically deserializing response to List<DishDTO>
+        for(int i = 0; i < 5; i++) {
+            System.out.println("sending menu to AI - attempt" + i + "/" + maxRetries);
 
-        List<AIDishDTO> AIdishDTOs;
-
-        AIdishDTOs = chatClient
-                .prompt()
-                .user(userSpec -> userSpec
-                        .text(prompt)
-                        .media(Media.builder()
-                                .mimeType(MimeTypeUtils.IMAGE_JPEG)
-                                .data(new ByteArrayResource(imageBytes))
-                                .build()))
-                .call()
-                .entity(new ParameterizedTypeReference<List<AIDishDTO>>() {
-                });
-
-        if (AIdishDTOs.isEmpty()) {
-            throw new IllegalStateException("Empty response from GPT - no dishes extracted");
+            try {
+                AIdishDTOs = chatClientBuilder.build()
+                        .prompt()
+                        .user(userSpec -> userSpec
+                                .text(prompt)
+                                .media(Media.builder()
+                                        .mimeType(MimeTypeUtils.IMAGE_JPEG)
+                                        .data(new ByteArrayResource(imageBytes))
+                                        .build()))
+                        .call()
+                        .entity(new ParameterizedTypeReference<List<AIDishDTO>>() {
+                        });
+            } catch (Exception e) {
+                System.out.println("gpt api request failed try" + i + "/" + maxRetries);
+                log.error("Error when sending request to gpt api: {}", e.getMessage());
+                continue;
+            }
+            if(i < maxRetries-1 && !AIdishDTOs.isEmpty()) {
+                System.out.println("successfully got valid response from gpt api");
+                break;
+            } else {
+                log.error("failed to get valid response from gpt api after " + maxRetries + " attempts, returning empty menu. If no errors returned before, there was probably no items visible in the photo");
+                return new ArrayList<Dish>();
+            }
         }
-
         // Convert DishDTOs to Dish entities and save them to the database
         List<Dish> savedDishes = new ArrayList<>();
         for (AIDishDTO dto : AIdishDTOs) {
@@ -137,22 +116,18 @@ public class MenuAIService {
             Dish savedDish = dishRepository.save(dish);
             savedDishes.add(savedDish);
         }
-        log.info("Successfully parsed and saved {} dishes from image", savedDishes.size());
         return savedDishes;
     }
 
-    @Recover
-    public List<Dish> recover(Exception e, byte[] imageBytes) {
-        log.error("All GPT retry attempts exhausted: {}", e.getMessage());
-        return Collections.emptyList();
+    // Helper method to convert DishDTO to Dish entity
+    private Dish convertToEntity(AIDishDTO dto) {
+        Dish dish = new Dish();
+        dish.setName(dto.getName());
+        dish.setCategory(Dish.Category.valueOf(dto.getCategory()));
+        dish.setPrice(new Price(dto.getPrice(), "PLN"));
+        dish.setAllergens(dto.getAllergens());
+        return dish;
     }
-
-import org.springframework.stereotype.Service;
-import java.util.List;
-
-@Service
-public interface MenuAIService {
-    List<Dish> parseMenuFromImage(byte[] imageBytes);
 }
 
 

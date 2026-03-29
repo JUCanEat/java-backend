@@ -1,0 +1,64 @@
+name: Branched Java Maven CI
+
+on:
+  push:
+    branches:
+      - '-!main'
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+  pull_request:
+
+env:
+  DOCKER_IMAGE: haniazipser2004/awesome-amazing-project
+
+jobs:
+  build:
+    environment: dev
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Make mvnw executable
+      run: chmod +x ./mvnw
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '21'
+
+    - name: Cache Maven dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+
+    - name: Run tests
+      run: ./mvnw -q test
+
+    - name: Log in to Docker
+      uses: docker/login-action@v2
+      with:
+          username: ${{ vars.DOCKER_ID }}
+          password: ${{ secrets.DOCKER_PAT }}
+
+    - name: Set image tag
+      id: tags
+      run: |
+        SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+        CLEAN_BRANCH=$(echo "${{ github.ref_name }}" | sed 's/[^a-zA-Z0-9]/-/g' | cut -c1-20)
+        echo "tags=${{ env.DOCKER_IMAGE }}:${CLEAN_BRANCH}-${SHORT_SHA}" >> $GITHUB_OUTPUT
+
+    - name: Build and push Docker image
+      if: github.ref_name == github.event.repository.default_branch
+      run: |
+        mvn spring-boot:build-image \
+          -Dspring-boot.build-image.imageName=${{ steps.tags.outputs.tags }} \
+          -Dspring-boot.build-image.env.SPRING_AI_OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+        
+        docker push ${{ steps.tags.outputs.tags }}
