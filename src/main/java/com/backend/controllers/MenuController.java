@@ -103,8 +103,8 @@ public class MenuController {
     }
 
     @Operation(
-            summary = "Add new daily menu by menuId",
-            description = "Adds new active daily menu"
+            summary = "Create or update published daily menu",
+            description = "Publishes a menu for the provided date. Date is required. Supports scheduling future menus and editing already published menus."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved restaurant details"),
