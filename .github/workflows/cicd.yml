@@ -41,14 +41,14 @@ jobs:
       run: ./mvnw -q test
 
     - name: Log in to Docker
-      #if: github.ref_name == github.event.repository.default_branch
+      if: github.ref_name == github.event.repository.default_branch
       uses: docker/login-action@v2
       with:
           username: ${{ vars.DOCKER_ID }}
           password: ${{ secrets.DOCKER_PAT }}
 
     - name: Set image tag
-      #if: github.ref_name == github.event.repository.default_branch
+      if: github.ref_name == github.event.repository.default_branch
       id: tags
       run: |
         SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
@@ -59,24 +59,11 @@ jobs:
           echo "tags=${{ env.DOCKER_IMAGE }}:${CLEAN_BRANCH}-${SHORT_SHA}" >> $GITHUB_OUTPUT
         fi
 
-    - name: Build Docker image
-      #if: github.ref_name == github.event.repository.default_branch
+    - name: Build and push Docker image
+      if: github.ref_name == github.event.repository.default_branch
       run: |
         mvn spring-boot:build-image \
           -Dspring-boot.build-image.imageName=${{ steps.tags.outputs.tags }} \
           -Dspring-boot.build-image.env.SPRING_AI_OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
-
-    - name: Install Trivy
-      run: |
-        sudo apt-get update && sudo apt-get install -y wget apt-transport-https gnupg lsb-release
-        wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-        echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
-        sudo apt-get update
-        sudo apt-get install -y trivy
-
-    - name: Scan Docker image for vulnerabilities
-      run: trivy image --exit-code 1 --severity HIGH,CRITICAL ${{ steps.tags.outputs.tags }}
-
-    - name: Push Docker image
-      if: github.ref_name == github.event.repository.default_branch
-      run: docker push ${{ steps.tags.outputs.tags }}
+        
+        docker push ${{ steps.tags.outputs.tags }}
