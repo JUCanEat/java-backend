@@ -37,18 +37,6 @@ services:
       - "5672:5672"
       - "15672:15672"
 
-  elasticSearch:
-    image: elasticsearch:8.11.1
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    volumes:
-      - elasticsearch-data:/usr/share/elasticsearch/data
-
 volumes:
   postgres-data:
   elasticsearch-data:
