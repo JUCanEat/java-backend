@@ -257,10 +257,10 @@ class MenuServiceTest {
         menuService.updateAndApproveMenu(restaurantId, request, "owner123");
 
         assertThat(draft.getStatus()).isEqualTo(DailyMenu.Status.ACTIVE);
-                assertThat(active.getStatus()).isEqualTo(DailyMenu.Status.ACTIVE);
+        assertThat(active.getStatus()).isEqualTo(DailyMenu.Status.INACTIVE);
 
         verify(dishRepository, times(1)).save(any(Dish.class));
-                verify(dailyMenuRepository, times(1)).save(any(DailyMenu.class));
+        verify(dailyMenuRepository, times(2)).save(any(DailyMenu.class));
     }
 
     @Test
@@ -274,6 +274,9 @@ class MenuServiceTest {
 
 
         when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.DRAFT, LocalDate.now()))
+                .thenReturn(Optional.empty());
+
+        when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.SCHEDULED, LocalDate.now()))
                 .thenReturn(Optional.empty());
 
         when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.ACTIVE, LocalDate.now()))
@@ -363,6 +366,9 @@ class MenuServiceTest {
                 .thenReturn(Optional.empty());
         when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.DRAFT, futureDate))
                 .thenReturn(Optional.empty());
+        when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.SCHEDULED, futureDate))
+                .thenReturn(Optional.empty());
+
         when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.ACTIVE, futureDate))
                 .thenReturn(Optional.empty());
 
