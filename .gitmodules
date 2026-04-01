@@ -1,3 +1,0 @@
-[submodule "external/charts"]
-	path = external/charts
-	url = git@github.com:JUCanEat/Charts.git
