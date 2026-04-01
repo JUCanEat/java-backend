@@ -5,7 +5,6 @@ import com.backend.model.entities.DailyMenu;
 import com.backend.model.entities.Dish;
 import com.backend.model.entities.Restaurant;
 import com.backend.repositories.DailyMenuRepository;
-import com.backend.repositories.DishRepository;
 import com.backend.services.MenuAIService;
 import com.backend.services.SseEmitterService;
 import org.junit.jupiter.api.Test;
@@ -32,9 +31,6 @@ class MenuProcessingListenerTest {
 
     @Mock
     private DailyMenuRepository dailyMenuRepository;
-
-    @Mock
-    private DishRepository dishRepository;
 
     @Mock
     private SseEmitterService sseEmitterService;
@@ -68,7 +64,6 @@ class MenuProcessingListenerTest {
 
         when(dailyMenuRepository.findById(menuId)).thenReturn(Optional.of(menu));
         when(menuAIService.parseMenuFromImage(message.getImageData())).thenReturn(List.of(parsedDish));
-        when(dishRepository.save(any(Dish.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         menuProcessingListener.processMenu(message);
 
