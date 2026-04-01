@@ -257,10 +257,10 @@ class MenuServiceTest {
         menuService.updateAndApproveMenu(restaurantId, request, "owner123");
 
         assertThat(draft.getStatus()).isEqualTo(DailyMenu.Status.ACTIVE);
-                assertThat(active.getStatus()).isEqualTo(DailyMenu.Status.ACTIVE);
+        assertThat(active.getStatus()).isEqualTo(DailyMenu.Status.INACTIVE);
 
         verify(dishRepository, times(1)).save(any(Dish.class));
-                verify(dailyMenuRepository, times(1)).save(any(DailyMenu.class));
+        verify(dailyMenuRepository, times(2)).save(any(DailyMenu.class));
     }
 
     @Test
