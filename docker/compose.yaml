@@ -1,25 +1,20 @@
 services:
-  java-backend:
-    image: haniazipser2004/awesome-amazing-project:latest
-    ports:
-      - "8080:8080"
-    pull_policy: always
-    depends_on:
-      - keycloak
-      - rabbitmq
+  postgres:
+    image: postgres:17
     environment:
-      - SPRING_PROFILES_ACTIVE=compose
-      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://localhost:8081/realms/JuCanEat
-      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/realms/JuCanEat/protocol/openid-connect/certs
-      - SPRING_RABBITMQ_HOST=rabbitmq
-      - SPRING_RABBITMQ_PORT=5672
-      - SPRING_RABBITMQ_USERNAME=admin
-      - SPRING_RABBITMQ_PASSWORD=admin
-      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=DEBUG
-      - KEYCLOAK_AUTH_SERVER_URL=http://localhost:8081
-      - KEYCLOAK_REALM=JuCanEat
-    extra_hosts:
-      - "localhost:host-gateway"
+      - POSTGRES_DB=java_backend
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./multiple-db:/docker-entrypoint-initdb.d
 
   keycloak:
     image: quay.io/keycloak/keycloak:24.0.1
@@ -41,26 +36,7 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-  prometheus:
-    image: prom/prometheus:latest
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-    depends_on:
-      - java-backend
 
-  grafana:
-    image: grafana/grafana:latest
-    ports:
-      - "3001:3000"
-    volumes:
-      - ./monitoring/provisioning/dashboards:/etc/grafana/provisioning/dashboards
-      - ./monitoring/provisioning/datasources:/etc/grafana/provisioning/datasources
-      - ./monitoring/dashboards:/var/lib/grafana/dashboards
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    depends_on:
-      - prometheus
-
+volumes:
+  postgres-data:
+  elasticsearch-data:
