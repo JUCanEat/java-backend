@@ -14,6 +14,7 @@ import com.backend.services.MenuService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -103,7 +104,7 @@ class MenuServiceTest {
                     return menu;
                 });
 
-        menuService.uploadMenuImage(restaurantId, file, "owner123");
+        menuService.uploadMenuImage(restaurantId, file, owner.getId());
 
         verify(dailyMenuRepository, times(1)).save(any(DailyMenu.class));
         verify(rabbitTemplate, times(1))
@@ -144,6 +145,24 @@ class MenuServiceTest {
 
         assertThat(result).isNotNull();
         verify(dailyMenuRepository).findByRestaurantIdAndStatus(restaurantId, DailyMenu.Status.DRAFT);
+    }
+
+    @Test
+    void shouldReplaceMenuDraft() throws IOException {
+        MultipartFile file = mock(MultipartFile.class);
+        when(file.getBytes()).thenReturn("string-imitating-test-image".getBytes());
+        when(file.getOriginalFilename()).thenReturn("menu.jpg");
+        when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));
+        when(dailyMenuRepository.save(any())).thenReturn(dailyMenu);
+
+        User owner = new User();
+        owner.setId("owner123");
+        restaurant.setOwners(Set.of(owner));
+
+        dailyMenu.setStatus(DailyMenu.Status.DRAFT);
+        menuService.uploadMenuImage(restaurantId, file, owner.getId());
+
+        verify(dailyMenuRepository, times(1)).deleteByRestaurantIdAndStatus(any(), eq(DailyMenu.Status.DRAFT));
     }
 
     @Test

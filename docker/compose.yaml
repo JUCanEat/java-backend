@@ -7,7 +7,6 @@ services:
     depends_on:
       - keycloak
       - rabbitmq
-      - elasticSearch
     environment:
       - SPRING_PROFILES_ACTIVE=compose
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://localhost:8081/realms/JuCanEat
@@ -42,18 +41,26 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-
-  elasticSearch:
-    image: elasticsearch:8.11.1
+  prometheus:
+    image: prom/prometheus:latest
     ports:
-      - "9200:9200"
-      - "9300:9300"
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "9090:9090"
     volumes:
-      - elasticsearch-data:/usr/share/elasticsearch/data
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - java-backend
 
-volumes:
-  elasticsearch-data:
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./monitoring/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./monitoring/dashboards:/var/lib/grafana/dashboards
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+

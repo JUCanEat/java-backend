@@ -16,12 +16,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
+@CrossOrigin(origins = "http://localhost:3000")
 @Tag(name = "Users", description = "Endpoints for user specific actions")
 public class UserController {
     private final UserService userService;
@@ -38,6 +40,21 @@ public class UserController {
         UserProfileDTO profile = userService.getFullProfile(jwt);
         return ResponseEntity.ok(profile);
     }
+
+    @Operation(
+            summary = "Get user's first owned restaurant",
+            description = "Retrieves the ID of the first restaurant owned by the current user."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved restaurant ID"),
+            @ApiResponse(responseCode = "404", description = "User has no owned restaurants")
+    })
+    @GetMapping("/me/restaurant")
+    public ResponseEntity<UUID> getFirstOwnedRestaurant(@AuthenticationPrincipal Jwt jwt) {
+        UUID restaurantId = userService.getFirstOwnedRestaurant(jwt);
+        return ResponseEntity.ok(restaurantId);
+    }
+
     @Operation(
             summary = "Add facility to favourites",
             description = "Adds a facility to the list of favourite facilities."

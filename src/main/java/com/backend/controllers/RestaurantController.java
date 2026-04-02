@@ -3,6 +3,7 @@ package com.backend.controllers;
 import com.backend.model.dtos.CreateRestaurantRequest;
 import com.backend.model.dtos.RestaurantDetailsDTO;
 import com.backend.model.dtos.RestaurantListDTO;
+import com.backend.model.dtos.UpdateRestaurantRequest;
 import com.backend.model.entities.Restaurant;
 import com.backend.services.RestaurantService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -72,6 +73,45 @@ public class RestaurantController {
         return ResponseEntity.ok(restaurant);
 
     }
+
+    @Operation(
+            summary = "Get restaurant owners by ID",
+            description = "Retrieves the list of owner user IDs for a specific restaurant."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved restaurant owners"),
+            @ApiResponse(responseCode = "404", description = "Restaurant not found")
+    })
+    @GetMapping("/{id}/owners")
+    public ResponseEntity<List<String>> getRestaurantOwners(
+            @Parameter(description = "Id of the restaurant", required = true)
+            @PathVariable UUID id) {
+
+        List<String> ownerIds = restaurantService.getRestaurantOwners(id);
+        return ResponseEntity.ok(ownerIds);
+    }
+
+    @Operation(
+            summary = "Add owner to restaurant",
+            description = "Adds the current authenticated user as an owner to an existing restaurant."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully added owner"),
+            @ApiResponse(responseCode = "404", description = "Restaurant or User not found"),
+            @ApiResponse(responseCode = "403", description = "User does not have a role restaurant_owner")
+    })
+    @PostMapping("/{id}/owners")
+    @PreAuthorize("hasRole('restaurant_owner')")
+    public ResponseEntity<Void> addOwnerToRestaurant(
+            @Parameter(description = "Id of the restaurant", required = true)
+            @PathVariable UUID id,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        String userId = jwt != null ? jwt.getSubject() : null;
+        restaurantService.addOwnerToRestaurant(id, userId);
+        return ResponseEntity.ok().build();
+    }
+
     @Operation(
             summary = "Add new restaurant",
             description = "Adds a new restaurant with given details."
@@ -87,10 +127,52 @@ public class RestaurantController {
             @RequestBody CreateRestaurantRequest request,
             @AuthenticationPrincipal Jwt jwt) {
 
-        String userId = jwt.getSubject();
+        String userId = jwt != null ? jwt.getSubject() : null;
         System.out.println("In controller.");
         RestaurantDetailsDTO restaurant = restaurantService.createRestaurant(request, userId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(restaurant);
     }
+
+    @Operation(
+            summary = "Get my restaurants",
+            description = "Retrieves all restaurants owned by the currently authenticated user."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved user's restaurants"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "403", description = "User does not have a role restaurant_owner")
+    })
+    @GetMapping("/my")
+    @PreAuthorize("hasRole('restaurant_owner')")
+    public ResponseEntity<List<RestaurantListDTO>> getMyRestaurants(
+            @AuthenticationPrincipal Jwt jwt) {
+
+        String userId = jwt != null ? jwt.getSubject() : null;
+        List<RestaurantListDTO> restaurants = restaurantService.getRestaurantsByOwner(userId);
+
+        return ResponseEntity.ok(restaurants);
+    }
+
+    @Operation(
+        summary = "Update restaurant information",
+        description = "Updates restaurant details for restaurant owners."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Restaurant updated successfully"),
+        @ApiResponse(responseCode = "404", description = "Restaurant not found"),
+        @ApiResponse(responseCode = "403", description = "User not authorized to edit this restaurant")
+        })
+        @PutMapping("/{id}")
+        @PreAuthorize("hasRole('restaurant_owner')")
+        public ResponseEntity<RestaurantDetailsDTO> updateRestaurant(
+                @Parameter(description = "Id of the restaurant", required = true)
+                @PathVariable UUID id,
+                @RequestBody UpdateRestaurantRequest request,
+                @AuthenticationPrincipal Jwt jwt) {
+        
+                String userId = jwt != null ? jwt.getSubject() : null;
+                RestaurantDetailsDTO restaurant = restaurantService.updateRestaurant(id, request, userId);
+                return ResponseEntity.ok(restaurant);
+        }
 }
