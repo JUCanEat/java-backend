@@ -40,7 +40,7 @@ you need to create a new migration file in src/main/resources/db/migration.
 - POSTGRES DB shell -> `docker exec -it <container_id> psql -U postgres` (use `docker ps` to find container id)
 
 If you want to run the backend with the containerized version of java as a sanity check:
-- run full_compose.yaml
+- run full_compose.yaml with `docker compose -f full_compose.yaml up`
 
 9. Documentation
 - Documentation is generated under http://localhost:8080/swagger-ui/index.html
