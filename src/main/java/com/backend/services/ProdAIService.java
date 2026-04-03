@@ -23,7 +23,7 @@ import java.util.ArrayList;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Profile("!dev & !compose")
+@Profile("!dev")
 public class ProdAIService implements MenuAIService {
     private final ChatClient.Builder chatClientBuilder;
     private final DishRepository dishRepository;
