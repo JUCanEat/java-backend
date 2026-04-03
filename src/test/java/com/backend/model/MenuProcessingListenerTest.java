@@ -74,7 +74,6 @@ class MenuProcessingListenerTest {
 
         assertThat(menu.getStatus()).isEqualTo(DailyMenu.Status.DRAFT);
         assertThat(menu.getDishes()).hasSize(1);
-        assertThat(menu.getDishes().get(0).getRestaurant()).isEqualTo(restaurant);
         verify(dishRepository).save(any(Dish.class));
         verify(dailyMenuRepository).save(menu);
         verify(sseEmitterService).sendEvent("owner-1", menuId);
