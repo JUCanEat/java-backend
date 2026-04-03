@@ -276,6 +276,9 @@ class MenuServiceTest {
         when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.DRAFT, LocalDate.now()))
                 .thenReturn(Optional.empty());
 
+        when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.SCHEDULED, LocalDate.now()))
+                .thenReturn(Optional.empty());
+
         when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.ACTIVE, LocalDate.now()))
                 .thenReturn(Optional.empty());
 
@@ -363,6 +366,9 @@ class MenuServiceTest {
                 .thenReturn(Optional.empty());
         when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.DRAFT, futureDate))
                 .thenReturn(Optional.empty());
+        when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.SCHEDULED, futureDate))
+                .thenReturn(Optional.empty());
+
         when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.ACTIVE, futureDate))
                 .thenReturn(Optional.empty());
 
