@@ -2,12 +2,12 @@ package com.backend.services;
 
 import com.backend.config.RabbitMQConfig;
 import com.backend.model.dtos.DailyMenuDTO;
+import com.backend.model.dtos.LocalizedDailyMenuDTO;
+import com.backend.model.dtos.LocalizedDishDTO;
 import com.backend.model.dtos.MessageDTO;
-import com.backend.model.dtos.RestaurantDetailsDTO;
 import com.backend.model.entities.DailyMenu;
 import com.backend.model.entities.Dish;
 import com.backend.model.entities.Restaurant;
-import com.backend.model.entities.User;
 import com.backend.model.valueObjects.Price;
 import com.backend.repositories.DailyMenuRepository;
 import com.backend.repositories.DishRepository;
@@ -15,7 +15,6 @@ import com.backend.repositories.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,11 +23,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -41,17 +37,96 @@ public class MenuService {
     private final RestaurantRepository restaurantRepository;
     private final RabbitTemplate rabbitTemplate;
     private final DishRepository dishRepository;
+        private final DishTranslationService dishTranslationService;
     //private final MenuAIService menuAIService; //Musisz to alek napisać
 
     public DailyMenuDTO getDailyMenuByRestaurantId(UUID id) { //TO DO : ADD UNIQUE CONSTRAINT IN DB ON DAILY MENU + ACTIVE
+        LocalDate today = LocalDate.now();
         Optional<DailyMenu> menu = dailyMenuRepository
-                .findByRestaurantIdAndStatus(id, DailyMenu.Status.ACTIVE);
+                .findByRestaurantIdAndStatusAndDate(id, DailyMenu.Status.ACTIVE, today);
 
         return menu.map(DailyMenuDTO::new)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Daily menu not found for restaurant: " + id
+                        "Daily menu not found for restaurant: " + id + " and date: " + today
                 ));
+    }
+
+    public LocalizedDailyMenuDTO getLocalizedDailyMenuByRestaurantId(UUID id, String language) {
+        DailyMenuDTO dailyMenu = getDailyMenuByRestaurantId(id);
+
+        List<UUID> dishIds = dailyMenu.getDishes().stream()
+                .map(dish -> dish.getId())
+                .collect(Collectors.toList());
+
+        var localizedNames = dishTranslationService.getDishNamesByLanguage(dishIds, language);
+
+        List<LocalizedDishDTO> localizedDishes = dailyMenu.getDishes().stream()
+                .map(dish -> new LocalizedDishDTO(
+                        dish,
+                        localizedNames.getOrDefault(dish.getId(), dish.getName()),
+                        dish.getPrice()
+                ))
+                .collect(Collectors.toList());
+
+        return new LocalizedDailyMenuDTO(
+                dailyMenu.getId(),
+                dailyMenu.getDate(),
+                dishTranslationService.resolveLanguageCode(language),
+                localizedDishes
+        );
+    }
+
+    public List<DailyMenuDTO> getScheduledAndActiveMenusByRestaurantId(UUID restaurantId) {
+                if (!restaurantRepository.existsById(restaurantId)) {
+                        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found");
+                }
+
+        List<DailyMenu> menus = dailyMenuRepository.findByRestaurantIdAndStatusInOrderByDateAsc(
+                restaurantId,
+                List.of(DailyMenu.Status.SCHEDULED, DailyMenu.Status.ACTIVE)
+        );
+
+        return menus.stream()
+                .map(DailyMenuDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<LocalizedDailyMenuDTO> getLocalizedScheduledAndActiveMenusByRestaurantId(UUID restaurantId, String language) {
+        if (!restaurantRepository.existsById(restaurantId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found");
+        }
+
+        List<DailyMenuDTO> menus = dailyMenuRepository.findByRestaurantIdAndStatusInOrderByDateAsc(
+                        restaurantId,
+                        List.of(DailyMenu.Status.SCHEDULED, DailyMenu.Status.ACTIVE)
+                ).stream()
+                .map(DailyMenuDTO::new)
+                .collect(Collectors.toList());
+
+        List<UUID> dishIds = menus.stream()
+                .flatMap(menu -> menu.getDishes().stream())
+                .map(dish -> dish.getId())
+                .distinct()
+                .collect(Collectors.toList());
+
+        var localizedNames = dishTranslationService.getDishNamesByLanguage(dishIds, language);
+        String resolvedLanguage = dishTranslationService.resolveLanguageCode(language);
+
+        return menus.stream()
+                .map(menu -> new LocalizedDailyMenuDTO(
+                        menu.getId(),
+                        menu.getDate(),
+                        resolvedLanguage,
+                        menu.getDishes().stream()
+                                .map(dish -> new LocalizedDishDTO(
+                                        dish,
+                                        localizedNames.getOrDefault(dish.getId(), dish.getName()),
+                                        dish.getPrice()
+                                ))
+                                .collect(Collectors.toList())
+                ))
+                .collect(Collectors.toList());
     }
 
     public void uploadMenuImage(
@@ -82,7 +157,7 @@ public class MenuService {
         // one from being saved as draft - and then the draft would be our demise.
 
         // todo: test by asserting deletion was called
-        dailyMenuRepository.deleteByRestaurantIdAndStatus(restaurantId, DailyMenu.Status.DRAFT);
+        dailyMenuRepository.deleteByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.DRAFT, today);
 
         DailyMenu saved = dailyMenuRepository.save(menu);
 
@@ -122,7 +197,11 @@ public class MenuService {
                 ));
     }
 
-    public void updateAndApproveMenu(UUID restaurantId, DailyMenuDTO request, String ownerId) {
+        public void updateAndApproveMenu(UUID restaurantId, DailyMenuDTO request, String ownerId) {
+                updateAndApproveMenu(restaurantId, request, ownerId, "pl");
+        }
+
+        public void updateAndApproveMenu(UUID restaurantId, DailyMenuDTO request, String ownerId, String sourceLanguageHeader) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Restaurant not found"));
@@ -133,27 +212,31 @@ public class MenuService {
                     "You are not the owner of this restaurant");
         }
 
+        if (request.getDate() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Menu date is required");
+        }
+
+        LocalDate targetDate = request.getDate();
+        if (targetDate.isBefore(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Cannot publish or schedule a menu in the past");
+        }
+
+        DailyMenu.Status targetStatus = targetDate.isAfter(LocalDate.now())
+                ? DailyMenu.Status.SCHEDULED
+                : DailyMenu.Status.ACTIVE;
+
         Optional<DailyMenu> processingMenu = dailyMenuRepository
-                .findByRestaurantIdAndStatus(restaurantId, DailyMenu.Status.PROCESSING);
+                .findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.PROCESSING, targetDate);
 
         if (processingMenu.isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Menu is currently being processed by OCR. Please wait for processing to complete.");
         }
 
-        Optional<DailyMenu> existingMenu = dailyMenuRepository
-                .findByRestaurantIdAndStatus(restaurantId, DailyMenu.Status.DRAFT);
-
-        DailyMenu menu;
-
-        if (existingMenu.isPresent()) {
-            menu = existingMenu.get();
-            menu.getDishes().clear();
-        } else {
-            menu = new DailyMenu();
-            menu.setRestaurant(restaurant);
-            menu.setDate(LocalDate.now());
-        }
+        DailyMenu menu = resolveMenuToUpdate(restaurantId, request, targetDate, restaurant);
+        menu.setDate(targetDate);
 
         if (request.getDishes() != null && !request.getDishes().isEmpty()) {
             menu.getDishes().clear();
@@ -165,7 +248,8 @@ public class MenuService {
                         dish.setName(dto.getName());
                         dish.setPrice(new Price(dto.getPrice(), "PLN"));
                         dish.setAllergens(dto.getAllergens());
-                        dishRepository.save(dish);
+                                                dishRepository.save(dish);
+                                                dishTranslationService.upsertBothLanguages(dish, dto.getName(), sourceLanguageHeader);
                         //aiservice.index(dish)
                         return dish;
                     })
@@ -174,13 +258,57 @@ public class MenuService {
             menu.getDishes().addAll(updatedDishes);
         }
 
-        Optional<DailyMenu> previousMenu = dailyMenuRepository.findByRestaurantIdAndStatus(restaurantId, DailyMenu.Status.ACTIVE);
-        if (previousMenu.isPresent()) {
-            previousMenu.get().setStatus(DailyMenu.Status.INACTIVE);
-            dailyMenuRepository.save(previousMenu.get());
+        Optional<DailyMenu> previousMenuForDate = dailyMenuRepository
+                .findByRestaurantIdAndStatusAndDate(restaurantId, targetStatus, targetDate);
+        if (previousMenuForDate.isPresent() && (menu.getId() == null || !previousMenuForDate.get().getId().equals(menu.getId()))) {
+            previousMenuForDate.get().setStatus(DailyMenu.Status.INACTIVE);
+            dailyMenuRepository.save(previousMenuForDate.get());
         }
 
-        menu.setStatus(DailyMenu.Status.ACTIVE);
+        menu.setStatus(targetStatus);
         dailyMenuRepository.save(menu);
+    }
+
+    private DailyMenu resolveMenuToUpdate(UUID restaurantId, DailyMenuDTO request, LocalDate targetDate, Restaurant restaurant) {
+        if (request.getId() != null) {
+            DailyMenu menuById = dailyMenuRepository.findByIdAndRestaurantId(request.getId(), restaurantId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                            "Menu not found for provided id"));
+
+            if (menuById.getStatus() != DailyMenu.Status.DRAFT
+                    && menuById.getStatus() != DailyMenu.Status.ACTIVE
+                    && menuById.getStatus() != DailyMenu.Status.SCHEDULED) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Only draft, published or scheduled menus can be edited");
+            }
+
+            return menuById;
+        }
+
+        Optional<DailyMenu> draftForDate = dailyMenuRepository
+                .findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.DRAFT, targetDate);
+
+        if (draftForDate.isPresent()) {
+            return draftForDate.get();
+        }
+
+        Optional<DailyMenu> scheduledForDate = dailyMenuRepository
+                .findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.SCHEDULED, targetDate);
+
+        if (scheduledForDate.isPresent()) {
+            return scheduledForDate.get();
+        }
+
+        Optional<DailyMenu> activeForDate = dailyMenuRepository
+                .findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.ACTIVE, targetDate);
+
+        if (activeForDate.isPresent()) {
+            return activeForDate.get();
+        }
+
+        DailyMenu menu = new DailyMenu();
+        menu.setRestaurant(restaurant);
+        menu.setDate(targetDate);
+        return menu;
     }
 }

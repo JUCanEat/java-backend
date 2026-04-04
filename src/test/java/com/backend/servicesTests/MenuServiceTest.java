@@ -10,6 +10,7 @@ import com.backend.model.entities.User;
 import com.backend.repositories.DailyMenuRepository;
 import com.backend.repositories.DishRepository;
 import com.backend.repositories.RestaurantRepository;
+import com.backend.services.DishTranslationService;
 import com.backend.services.MenuService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,7 @@ class MenuServiceTest {
     @Mock private RestaurantRepository restaurantRepository;
     @Mock private RabbitTemplate rabbitTemplate;
     @Mock private DishRepository dishRepository;
+        @Mock private DishTranslationService dishTranslationService;
 
     @InjectMocks private MenuService menuService;
 
@@ -65,24 +67,57 @@ class MenuServiceTest {
 
     @Test
     void shouldReturnDailyMenu() {
-        when(dailyMenuRepository.findByRestaurantIdAndStatus(restaurantId, DailyMenu.Status.ACTIVE))
+                when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.ACTIVE, LocalDate.now()))
                 .thenReturn(Optional.of(dailyMenu));
 
         DailyMenuDTO result = menuService.getDailyMenuByRestaurantId(restaurantId);
 
         assertThat(result).isNotNull();
-        verify(dailyMenuRepository).findByRestaurantIdAndStatus(restaurantId, DailyMenu.Status.ACTIVE);
+                verify(dailyMenuRepository).findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.ACTIVE, LocalDate.now());
     }
 
     @Test
     void shouldThrowExceptionWhenMenuNotFound() {
-        when(dailyMenuRepository.findByRestaurantIdAndStatus(restaurantId, DailyMenu.Status.ACTIVE))
+                when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.ACTIVE, LocalDate.now()))
                 .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> menuService.getDailyMenuByRestaurantId(restaurantId))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessageContaining("not found");
     }
+
+        @Test
+        void shouldReturnScheduledAndActiveMenus() {
+                DailyMenu scheduled = new DailyMenu();
+                scheduled.setId(UUID.randomUUID());
+                scheduled.setDate(LocalDate.now().plusDays(1));
+                scheduled.setStatus(DailyMenu.Status.SCHEDULED);
+
+                DailyMenu active = new DailyMenu();
+                active.setId(UUID.randomUUID());
+                active.setDate(LocalDate.now());
+                active.setStatus(DailyMenu.Status.ACTIVE);
+
+                when(restaurantRepository.existsById(restaurantId)).thenReturn(true);
+                when(dailyMenuRepository.findByRestaurantIdAndStatusInOrderByDateAsc(
+                                eq(restaurantId), anyList()))
+                                .thenReturn(List.of(active, scheduled));
+
+                List<DailyMenuDTO> result = menuService.getScheduledAndActiveMenusByRestaurantId(restaurantId);
+
+                assertThat(result).isNotNull();
+                verify(restaurantRepository).existsById(restaurantId);
+                verify(dailyMenuRepository).findByRestaurantIdAndStatusInOrderByDateAsc(eq(restaurantId), anyList());
+        }
+
+        @Test
+        void shouldThrowWhenRestaurantNotFoundForPlannedMenus() {
+                when(restaurantRepository.existsById(restaurantId)).thenReturn(false);
+
+                assertThatThrownBy(() -> menuService.getScheduledAndActiveMenusByRestaurantId(restaurantId))
+                                .isInstanceOf(ResponseStatusException.class)
+                                .hasMessageContaining("Restaurant not found");
+        }
 
 
     @Test
@@ -107,6 +142,8 @@ class MenuServiceTest {
         menuService.uploadMenuImage(restaurantId, file, owner.getId());
 
         verify(dailyMenuRepository, times(1)).save(any(DailyMenu.class));
+        verify(dailyMenuRepository, times(1))
+                .deleteByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.DRAFT, LocalDate.now());
         verify(rabbitTemplate, times(1))
                 .convertAndSend(anyString(), anyString(), any(MessageDTO.class));
     }
@@ -162,7 +199,7 @@ class MenuServiceTest {
         dailyMenu.setStatus(DailyMenu.Status.DRAFT);
         menuService.uploadMenuImage(restaurantId, file, owner.getId());
 
-        verify(dailyMenuRepository, times(1)).deleteByRestaurantIdAndStatus(any(), eq(DailyMenu.Status.DRAFT));
+                verify(dailyMenuRepository, times(1)).deleteByRestaurantIdAndStatusAndDate(any(), eq(DailyMenu.Status.DRAFT), eq(LocalDate.now()));
     }
 
     @Test
@@ -181,7 +218,7 @@ class MenuServiceTest {
         owner.setId("owner123");
         restaurant.setOwners(Set.of(owner));
 
-        when(dailyMenuRepository.findByRestaurantIdAndStatus(restaurantId, DailyMenu.Status.PROCESSING))
+        when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.PROCESSING, LocalDate.now()))
                 .thenReturn(Optional.empty());
 
         DailyMenu draft = new DailyMenu();
@@ -189,13 +226,17 @@ class MenuServiceTest {
         draft.setRestaurant(restaurant);
         draft.setStatus(DailyMenu.Status.DRAFT);
 
-        when(dailyMenuRepository.findByRestaurantIdAndStatus(restaurantId, DailyMenu.Status.DRAFT))
+        draft.setDate(LocalDate.now());
+
+        when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.DRAFT, LocalDate.now()))
                 .thenReturn(Optional.of(draft));
 
         DailyMenu active = new DailyMenu();
+        active.setId(UUID.randomUUID());
         active.setStatus(DailyMenu.Status.ACTIVE);
+        active.setDate(LocalDate.now());
 
-        when(dailyMenuRepository.findByRestaurantIdAndStatus(restaurantId, DailyMenu.Status.ACTIVE))
+        when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.ACTIVE, LocalDate.now()))
                 .thenReturn(Optional.of(active));
 
         when(restaurantRepository.findById(restaurantId))
@@ -208,6 +249,7 @@ class MenuServiceTest {
         dishDTO.setAllergens(Set.of(Dish.Allergens.GLUTEN));
 
         DailyMenuDTO request = new DailyMenuDTO();
+        request.setDate(LocalDate.now());
         request.setDishes(List.of(dishDTO));
 
         when(dishRepository.save(any(Dish.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -218,7 +260,7 @@ class MenuServiceTest {
         assertThat(active.getStatus()).isEqualTo(DailyMenu.Status.INACTIVE);
 
         verify(dishRepository, times(1)).save(any(Dish.class));
-        verify(dailyMenuRepository, times(2)).save(any(DailyMenu.class)); // inactive + active
+        verify(dailyMenuRepository, times(2)).save(any(DailyMenu.class));
     }
 
     @Test
@@ -227,18 +269,18 @@ class MenuServiceTest {
         owner.setId("owner123");
         restaurant.setOwners(Set.of(owner));
 
-        when(dailyMenuRepository.findByRestaurantIdAndStatus(restaurantId, DailyMenu.Status.PROCESSING))
+        when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.PROCESSING, LocalDate.now()))
                 .thenReturn(Optional.empty());
 
 
-        when(dailyMenuRepository.findByRestaurantIdAndStatus(restaurantId, DailyMenu.Status.DRAFT))
+        when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.DRAFT, LocalDate.now()))
                 .thenReturn(Optional.empty());
 
-        DailyMenu active = new DailyMenu();
-        active.setStatus(DailyMenu.Status.ACTIVE);
+        when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.SCHEDULED, LocalDate.now()))
+                .thenReturn(Optional.empty());
 
-        when(dailyMenuRepository.findByRestaurantIdAndStatus(restaurantId, DailyMenu.Status.ACTIVE))
-                .thenReturn(Optional.of(active));
+        when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.ACTIVE, LocalDate.now()))
+                .thenReturn(Optional.empty());
 
         when(restaurantRepository.findById(restaurantId))
                 .thenReturn(Optional.of(restaurant));
@@ -250,16 +292,15 @@ class MenuServiceTest {
         dishDTO.setAllergens(Set.of(Dish.Allergens.GLUTEN));
 
         DailyMenuDTO request = new DailyMenuDTO();
+        request.setDate(LocalDate.now());
         request.setDishes(List.of(dishDTO));
 
         when(dishRepository.save(any(Dish.class))).thenAnswer(inv -> inv.getArgument(0));
 
         menuService.updateAndApproveMenu(restaurantId, request, "owner123");
 
-        assertThat(active.getStatus()).isEqualTo(DailyMenu.Status.INACTIVE);
-
         verify(dishRepository, times(1)).save(any(Dish.class));
-        verify(dailyMenuRepository, times(2)).save(any(DailyMenu.class)); // inactive + active
+                verify(dailyMenuRepository, times(1)).save(any(DailyMenu.class));
     }
 
     @Test
@@ -300,12 +341,131 @@ class MenuServiceTest {
         DailyMenu processing = new DailyMenu();
         processing.setStatus(DailyMenu.Status.PROCESSING);
 
-        when(dailyMenuRepository.findByRestaurantIdAndStatus(restaurantId, DailyMenu.Status.PROCESSING))
+        when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.PROCESSING, LocalDate.now()))
                 .thenReturn(Optional.of(processing));
 
+        DailyMenuDTO request = new DailyMenuDTO();
+        request.setDate(LocalDate.now());
+
         assertThatThrownBy(() ->
-                menuService.updateAndApproveMenu(restaurantId, new DailyMenuDTO(), "owner123"))
+                menuService.updateAndApproveMenu(restaurantId, request, "owner123"))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessageContaining("Menu is currently being processed");
     }
+
+    @Test
+    void shouldScheduleFuturePublishedMenu() {
+        User owner = new User();
+        owner.setId("owner123");
+        restaurant.setOwners(Set.of(owner));
+
+        LocalDate futureDate = LocalDate.now().plusDays(3);
+
+        when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));
+        when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.PROCESSING, futureDate))
+                .thenReturn(Optional.empty());
+        when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.DRAFT, futureDate))
+                .thenReturn(Optional.empty());
+        when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.SCHEDULED, futureDate))
+                .thenReturn(Optional.empty());
+
+        when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.ACTIVE, futureDate))
+                .thenReturn(Optional.empty());
+
+        DishDTO dishDTO = new DishDTO();
+        dishDTO.setName("Soup");
+        dishDTO.setCategory("SOUP");
+        dishDTO.setPrice(BigDecimal.valueOf(19.0));
+        dishDTO.setAllergens(Set.of());
+
+        DailyMenuDTO request = new DailyMenuDTO();
+        request.setDate(futureDate);
+        request.setDishes(List.of(dishDTO));
+
+        when(dishRepository.save(any(Dish.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        menuService.updateAndApproveMenu(restaurantId, request, "owner123");
+
+        ArgumentCaptor<DailyMenu> captor = ArgumentCaptor.forClass(DailyMenu.class);
+        verify(dailyMenuRepository).save(captor.capture());
+        assertThat(captor.getValue().getDate()).isEqualTo(futureDate);
+                assertThat(captor.getValue().getStatus()).isEqualTo(DailyMenu.Status.SCHEDULED);
+    }
+
+    @Test
+        void shouldAllowEditingScheduledMenuById() {
+        User owner = new User();
+        owner.setId("owner123");
+        restaurant.setOwners(Set.of(owner));
+
+        LocalDate targetDate = LocalDate.now().plusDays(1);
+        UUID menuId = UUID.randomUUID();
+
+        DailyMenu scheduledMenu = new DailyMenu();
+        scheduledMenu.setId(menuId);
+        scheduledMenu.setRestaurant(restaurant);
+        scheduledMenu.setStatus(DailyMenu.Status.SCHEDULED);
+        scheduledMenu.setDate(targetDate);
+
+        when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));
+        when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.PROCESSING, targetDate))
+                .thenReturn(Optional.empty());
+        when(dailyMenuRepository.findByIdAndRestaurantId(menuId, restaurantId)).thenReturn(Optional.of(scheduledMenu));
+        when(dailyMenuRepository.findByRestaurantIdAndStatusAndDate(restaurantId, DailyMenu.Status.SCHEDULED, targetDate))
+                .thenReturn(Optional.of(scheduledMenu));
+
+        DishDTO dishDTO = new DishDTO();
+        dishDTO.setName("Edited Pizza");
+        dishDTO.setCategory("MAIN_COURSE");
+        dishDTO.setPrice(BigDecimal.valueOf(31.0));
+        dishDTO.setAllergens(Set.of(Dish.Allergens.GLUTEN));
+
+        DailyMenuDTO request = new DailyMenuDTO();
+        request.setId(menuId);
+        request.setDate(targetDate);
+        request.setDishes(List.of(dishDTO));
+
+        when(dishRepository.save(any(Dish.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        menuService.updateAndApproveMenu(restaurantId, request, "owner123");
+
+        verify(dailyMenuRepository, never()).save(argThat(menu -> menu.getStatus() == DailyMenu.Status.INACTIVE));
+                verify(dailyMenuRepository).save(scheduledMenu);
+    }
+
+    @Test
+    void shouldThrowWhenSchedulingMenuInPast() {
+        User owner = new User();
+        owner.setId("owner123");
+        restaurant.setOwners(Set.of(owner));
+
+        when(restaurantRepository.findById(restaurantId))
+                .thenReturn(Optional.of(restaurant));
+
+        DailyMenuDTO request = new DailyMenuDTO();
+        request.setDate(LocalDate.now().minusDays(1));
+
+        assertThatThrownBy(() ->
+                menuService.updateAndApproveMenu(restaurantId, request, "owner123"))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("past");
+    }
+
+        @Test
+        void shouldThrowWhenDateMissing() {
+                User owner = new User();
+                owner.setId("owner123");
+                restaurant.setOwners(Set.of(owner));
+
+                when(restaurantRepository.findById(restaurantId))
+                                .thenReturn(Optional.of(restaurant));
+
+                DailyMenuDTO request = new DailyMenuDTO();
+                request.setDishes(List.of());
+
+                assertThatThrownBy(() ->
+                                menuService.updateAndApproveMenu(restaurantId, request, "owner123"))
+                                .isInstanceOf(ResponseStatusException.class)
+                                .hasMessageContaining("date is required");
+        }
 }
