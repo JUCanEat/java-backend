@@ -1,25 +1,20 @@
 package com.backend.services;
 
-import com.backend.model.dtos.AIDishDTO;
 import com.backend.model.entities.Dish;
-import com.backend.model.entities.User;
 import com.backend.repositories.DishRepository;
-import com.backend.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Profile({"dev"})
-public class DevAIService implements MenuAIService {
+@ConditionalOnProperty(name = "aiservice.mock-implementation-active", havingValue = "true")
+public class MockAIService implements MenuAIService {
     private final DishRepository dishRepository;
 
     public List<Dish> parseMenuFromImage(byte[] imageBytes) {
