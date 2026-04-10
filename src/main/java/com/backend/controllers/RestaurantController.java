@@ -122,7 +122,6 @@ public class RestaurantController {
             @ApiResponse(responseCode = "403", description = "User does not have a role restaurant_owner")
     })
     @PostMapping()
-    @PreAuthorize("hasRole('restaurant_owner')")
     public ResponseEntity<RestaurantDetailsDTO> createRestaurant(
             @RequestBody CreateRestaurantRequest request,
             @AuthenticationPrincipal Jwt jwt) {

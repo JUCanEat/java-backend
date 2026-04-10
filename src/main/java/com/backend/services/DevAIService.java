@@ -18,7 +18,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Profile({"dev", "compose"})
+@Profile({"dev"})
 public class DevAIService implements MenuAIService {
     private final DishRepository dishRepository;
 
