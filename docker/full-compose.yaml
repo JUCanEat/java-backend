@@ -1,20 +1,6 @@
 services:
-  dozzle:
-    image: amir20/dozzle:latest
-    container_name: dozzle
-    ports:
-      - "8080:8080"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    environment:
-      - DOZZLE_LEVEL=info
-      # Optional: enable basic auth
-      # - DOZZLE_AUTH_PROVIDER=basic
-    restart: unless-stopped
-
   java-backend:
-    #image: haniazipser2004/awesome-amazing-project:latest
-    build: ../
+    image: haniazipser2004/awesome-amazing-project:latest
     ports:
       - "8080:8080"
     pull_policy: always
