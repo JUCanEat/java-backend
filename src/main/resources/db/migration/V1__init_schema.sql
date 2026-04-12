@@ -1,7 +1,8 @@
-create table daily_menu (date date, id uuid not null, restaurant_id uuid, original_file_name varchar(255), status varchar(255) check (status in ('ACTIVE','INACTIVE','PROCESSING','DRAFT','FAILED')), primary key (id));
+create table daily_menu (date date, id uuid not null, restaurant_id uuid, original_file_name varchar(255), status varchar(255) check (status in ('ACTIVE','SCHEDULED','INACTIVE','PROCESSING','DRAFT','FAILED')), primary key (id));
 create table daily_menu_dishes (daily_menu_id uuid not null, dish_id uuid not null);
 create table dish (amount numeric(38,2), id uuid not null, restaurant_id uuid, category varchar(255) check (category in ('SOUP','MAIN_COURSE')), currency varchar(255), name varchar(255), primary key (id));
 create table dish_allergens (dish_id uuid not null, allergen varchar(255) check (allergen in ('NUTS','GLUTEN','MEAT','LACTOSE')));
+create table dish_translation (dish_id uuid not null, id uuid not null, language varchar(255) check (language in ('PL','EN')), name varchar(255), primary key (id), unique (dish_id, language));
 create table facility (id uuid not null, location_id uuid unique, facility_type varchar(31) not null, description varchar(255), name varchar(255), photo_path varchar(255), type varchar(255) check (type in ('SNACKS','COFFEE','LUNCH')), primary key (id));
 create table keycloak_user (id varchar(255) not null, primary key (id));
 create table location (latitude float(53), longitude float(53), id uuid not null, primary key (id));
@@ -13,6 +14,7 @@ alter table if exists daily_menu_dishes add constraint FKddoquy0ud3lkjjycersya25
 alter table if exists daily_menu_dishes add constraint FKn2k4n306qn8l7imu1b3audn2g foreign key (daily_menu_id) references daily_menu;
 alter table if exists dish add constraint FKs0g15st4ftlyi1ilw7c0symdi foreign key (restaurant_id) references facility;
 alter table if exists dish_allergens add constraint FKm9q52lhbluv5a316ehhmhb57u foreign key (dish_id) references dish;
+alter table if exists dish_translation add constraint FKml9k3370c7q33un7ij5b6sape foreign key (dish_id) references dish;
 alter table if exists facility add constraint FKhbnsr6du6x8l5gd7b1my90tba foreign key (location_id) references location;
 alter table if exists opening_hours add constraint FKptr5ari24emao5jbfk8q35c3y foreign key (restaurant_id) references facility;
 alter table if exists restaurant_owners add constraint FKg2a3v64ytrdq5mrmy0svstr8q foreign key (user_id) references keycloak_user;
