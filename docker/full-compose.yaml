@@ -1,11 +1,25 @@
 services:
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: dozzle
+    ports:
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - DOZZLE_LEVEL=info
+      # Optional: enable basic auth
+      # - DOZZLE_AUTH_PROVIDER=basic
+    restart: unless-stopped
+
   java-backend:
-    image: haniazipser2004/awesome-amazing-project:latest
+    #image: haniazipser2004/awesome-amazing-project:latest
+    build: ../
     ports:
       - "8080:8080"
     pull_policy: always
     depends_on:
-      postgres:
+      postgres_java_backend:
         condition: service_healthy
       keycloak:
         condition: service_started
@@ -27,22 +41,44 @@ services:
       - DEEPL_API_KEY=placeholder
     extra_hosts:
       - "localhost:host-gateway" # makes localhost in container resolve to host IP
+    networks:
+      - jucaneat-net
 
-  postgres:
+  postgres_java_backend:
     image: postgres:17
     environment:
       - POSTGRES_DB=java_backend
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=java_backend
+      - POSTGRES_PASSWORD=java_backend
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U java_backend" ]
       interval: 5s
       timeout: 5s
       retries: 5
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-java-backend-data:/var/lib/postgresql/data
+    networks:
+      - jucaneat-net
+
+  postgres_kc:
+    image: postgres:17
+    environment:
+      - POSTGRES_DB=keycloak
+      - POSTGRES_USER=keycloak
+      - POSTGRES_PASSWORD=keycloak
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U keycloak" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres-kc-data:/var/lib/postgresql/data
+    networks:
+      - jucaneat-net
 
   keycloak:
     image: quay.io/keycloak/keycloak:24.0.1
@@ -51,10 +87,20 @@ services:
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_DB=postgres
+      - KC_DB_URL_HOST=postgres_kc
+      - KC_DB_USERNAME=keycloak
+      - KC_DB_PASSWORD=keycloak
+      - KC_DB_URL_DATABASE=keycloak
     command: start-dev --import-realm
+    depends_on:
+      postgres_kc:
+        condition: service_healthy
     volumes:
       - ./imports:/opt/keycloak/data/import
-      - ./keycloak/themes:/opt/keycloak/themes
+      - ./providers:/opt/keycloak/providers
+    networks:
+      - jucaneat-net
 
   rabbitmq:
     image: 'rabbitmq:latest'
@@ -64,6 +110,8 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    networks:
+      - jucaneat-net
 
   elasticSearch:
     image: elasticsearch:8.11.1
@@ -76,7 +124,14 @@ services:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - jucaneat-net
 
 volumes:
-  postgres-data:
+  postgres-java-backend-data:
+  postgres-kc-data:
   elasticsearch-data:
+
+networks:
+  jucaneat-net:
+    driver: bridge

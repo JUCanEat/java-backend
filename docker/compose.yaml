@@ -1,20 +1,50 @@
 services:
-  postgres:
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: dozzle
+    ports:
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - DOZZLE_LEVEL=info
+      # Optional: enable basic auth
+      # - DOZZLE_AUTH_PROVIDER=basic
+    restart: unless-stopped
+
+  postgres_java_backend:
+    image: postgres:17
+    environment:
+      - POSTGRES_DB=java_backend
+      - POSTGRES_USER=java_backend
+      - POSTGRES_PASSWORD=java_backend
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U java_backend" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres-java-backend-data:/var/lib/postgresql/data
+    networks:
+      - jucaneat-net
+
+  postgres_kc:
     image: postgres:17
     environment:
       - POSTGRES_DB=keycloak
       - POSTGRES_USER=keycloak
       - POSTGRES_PASSWORD=keycloak
     ports:
-      - "5432:5432"
+      - "5433:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U keycloak"]
+      test: [ "CMD-SHELL", "pg_isready -U keycloak" ]
       interval: 5s
       timeout: 5s
       retries: 5
     volumes:
-      - postgres-data:/var/lib/postgresql/data
-      - ./multiple-db:/docker-entrypoint-initdb.d
+      - postgres-kc-data:/var/lib/postgresql/data
     networks:
       - jucaneat-net
 
@@ -26,16 +56,13 @@ services:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
       - KC_DB=postgres
-      - KC_DB_URL_HOST=postgres
+      - KC_DB_URL_HOST=postgres_kc
       - KC_DB_USERNAME=keycloak
       - KC_DB_PASSWORD=keycloak
       - KC_DB_URL_DATABASE=keycloak
-      - KC_HOSTNAME=localhost
-      - KC_PROXY=edge
-      - KC_HTTP_ENABLED=true
     command: start-dev --import-realm
     depends_on:
-      postgres:
+      postgres_kc:
         condition: service_healthy
     volumes:
       - ./imports:/opt/keycloak/data/import
@@ -55,7 +82,8 @@ services:
       - jucaneat-net
 
 volumes:
-  postgres-data:
+  postgres-kc-data:
+  postgres-java-backend-data:
   elasticsearch-data:
 
 networks:
