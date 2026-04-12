@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -36,23 +37,26 @@ class MenuRepositoryTest {
         DailyMenu activeMenu = new DailyMenu();
         activeMenu.setRestaurant(restaurant);
         activeMenu.setStatus(DailyMenu.Status.ACTIVE);
+        activeMenu.setDate(LocalDate.now());
         dailyMenuRepository.save(activeMenu);
 
         DailyMenu inactiveMenu = new DailyMenu();
         inactiveMenu.setRestaurant(restaurant);
         inactiveMenu.setStatus(DailyMenu.Status.INACTIVE);
+        inactiveMenu.setDate(LocalDate.now());
         dailyMenuRepository.save(inactiveMenu);
 
         inactiveMenu = new DailyMenu();
         inactiveMenu.setRestaurant(restaurant);
         inactiveMenu.setStatus(DailyMenu.Status.INACTIVE);
+        inactiveMenu.setDate(LocalDate.now().plusDays(1));
         dailyMenuRepository.save(inactiveMenu);
 
         entityManager.flush();
         entityManager.clear();
 
         Optional<DailyMenu> result = dailyMenuRepository
-                .findByRestaurantIdAndStatus(restaurant.getId(), DailyMenu.Status.ACTIVE);
+            .findByRestaurantIdAndStatusAndDate(restaurant.getId(), DailyMenu.Status.ACTIVE, LocalDate.now());
 
         assertThat(result).isPresent();
         assertThat(result.get().getStatus()).isEqualTo(DailyMenu.Status.ACTIVE);

@@ -1,6 +1,7 @@
 package com.backend.controllers;
 
 import com.backend.model.dtos.DailyMenuDTO;
+import com.backend.model.dtos.LocalizedDailyMenuDTO;
 import com.backend.model.dtos.RestaurantDetailsDTO;
 import com.backend.model.dtos.RestaurantListDTO;
 import com.backend.services.MenuService;
@@ -79,6 +80,63 @@ public class MenuController {
         return ResponseEntity.ok(dailyMenu);
     }
 
+        @Operation(
+                        summary = "Get restaurant daily menu in requested language",
+                        description = "Retrieves today's published menu translated according to language parameter (PL/EN)."
+        )
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Successfully retrieved localized daily menu"),
+                        @ApiResponse(responseCode = "404", description = "Restaurant not found")
+        })
+        @GetMapping("/{id}/localized")
+        public ResponseEntity<LocalizedDailyMenuDTO> getLocalizedDailyMenuByRestaurantId(
+                        @Parameter(description = "Id of the restaurant", required = true)
+                        @PathVariable UUID id,
+                        @Parameter(description = "Language code (PL or EN)", required = false)
+                        @RequestParam(value = "language", required = false) String language) {
+
+                LocalizedDailyMenuDTO dailyMenu = menuService.getLocalizedDailyMenuByRestaurantId(id, language);
+                return ResponseEntity.ok(dailyMenu);
+        }
+
+    @Operation(
+            summary = "Get all active and scheduled menus by restaurant ID",
+            description = "Retrieves all menus for given restaurant that are currently ACTIVE or SCHEDULED."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved menus"),
+            @ApiResponse(responseCode = "404", description = "Restaurant not found")
+    })
+    @GetMapping("/{id}/planned")
+    @PreAuthorize("hasRole('restaurant_owner')")
+    public ResponseEntity<List<DailyMenuDTO>> getScheduledAndActiveMenusByRestaurantId(
+            @Parameter(description = "Id of the restaurant", required = true)
+            @PathVariable UUID id) {
+
+        List<DailyMenuDTO> menus = menuService.getScheduledAndActiveMenusByRestaurantId(id);
+        return ResponseEntity.ok(menus);
+    }
+
+    @Operation(
+            summary = "Get all active and scheduled menus by restaurant ID in requested language",
+            description = "Retrieves all ACTIVE and SCHEDULED menus for given restaurant translated according to language parameter (PL/EN)."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved localized menus"),
+            @ApiResponse(responseCode = "404", description = "Restaurant not found")
+    })
+    @GetMapping("/{id}/planned/localized")
+    @PreAuthorize("hasRole('restaurant_owner')")
+    public ResponseEntity<List<LocalizedDailyMenuDTO>> getLocalizedScheduledAndActiveMenusByRestaurantId(
+            @Parameter(description = "Id of the restaurant", required = true)
+            @PathVariable UUID id,
+            @Parameter(description = "Language code (PL or EN)", required = false)
+            @RequestParam(value = "language", required = false) String language) {
+
+        List<LocalizedDailyMenuDTO> menus = menuService.getLocalizedScheduledAndActiveMenusByRestaurantId(id, language);
+        return ResponseEntity.ok(menus);
+    }
+
     @Operation(
             summary = "Process daily menu image for restaurant by ID",
             description = "Processes new daily menu for the restaurant with given id."
@@ -103,8 +161,8 @@ public class MenuController {
     }
 
     @Operation(
-            summary = "Add new daily menu by menuId",
-            description = "Adds new active daily menu"
+            summary = "Create or update published daily menu",
+            description = "Creates or updates a menu for the provided date. For today it is published (ACTIVE), for future dates it is scheduled (SCHEDULED). Date is required and the same endpoint supports editing."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved restaurant details"),
@@ -114,9 +172,10 @@ public class MenuController {
     @PreAuthorize("hasRole('restaurant_owner')")
     public ResponseEntity<Void> updateMenu(@PathVariable UUID restaurantId,
                                            @RequestBody DailyMenuDTO request,
+                                                                                   @RequestHeader(value = "Accept-Language", required = false) String languageHeader,
                                            @AuthenticationPrincipal Jwt jwt) {
         String ownerId = jwt.getSubject();
-        menuService.updateAndApproveMenu(restaurantId, request, ownerId);
+                menuService.updateAndApproveMenu(restaurantId, request, ownerId, languageHeader);
         return ResponseEntity.ok().build();
     }
 
