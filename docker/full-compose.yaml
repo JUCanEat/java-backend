@@ -24,6 +24,7 @@ services:
       - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=DEBUG
       - KEYCLOAK_AUTH_SERVER_URL=http://localhost:8081
       - KEYCLOAK_REALM=JuCanEat
+      - DEEPL_API_KEY=placeholder
     extra_hosts:
       - "localhost:host-gateway" # makes localhost in container resolve to host IP
 
