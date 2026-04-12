@@ -1,6 +1,6 @@
 # java-backend
 ## How to run springboot application
-
+### IntelliJ IDEA
 1. Install Lombok Plugin
 
 - Install Lombok plugin - should be suggested in the bottom right corner of IntelliJ
@@ -16,6 +16,7 @@
 - If the green arrow in top right corner is grey find main class: src/main/java/com/backend/BackendApplication.java and click on the green arrow next to a main class
 - From now on, you can use the green arrow in top right corner
 
+### Terminal / browser / dev
 4. Test the Application
 
 - Go to http://localhost:8080/hello/
@@ -24,21 +25,24 @@
 5. Unit tests
 - test are automaticly run by a ci workflow, do not merge until you pass them
 
-6. Docker
-- On merge to main docker image is build and pushed to dockerhub with latest tag
-- See https://hub.docker.com/repository/docker/haniazipser2004/awesome-amazing-project
-- docker pull haniazipser2004/awesome-amazing-project:latest
-- docker run -p 8080:8080 haniazipser2004/awesome-amazing-project:latest (or different port mapping if 8080 is in use)
+6. Migrations
+- We use flyway for database migrations, which means that if you want to update the database schema, 
+you need to create a new migration file in src/main/resources/db/migration.
+- If you manage to "break" the database, you can reset it by running `docker compose down -v` (this will remove the postgres data volume associated with the compose file
 
 7. Docker compose
-  If you want to run whole backend (java + python + keycloak):
-- clone this repo
-- run compose.yaml
+
+**If you want to run whole backend locally, fast (java + keycloak + rabbitmq + postgres db)**:
+- run compose.yaml (see pt. 2 of `6. Migrations`)
+- run spring boot application (see `3. Run Spring Boot Application`)
 - Java backend -> http://localhost:8080
 - Keycloak -> http://localhost:8081
-- Python microservice -> http://localhost:8000
+- POSTGRES DB shell -> `docker exec -it <container_id> psql -U postgres` (use `docker ps` to find container id)
 
-7. Documentation
+If you want to run the backend with the containerized version of java as a sanity check:
+- run full_compose.yaml with `docker compose -f full_compose.yaml up`
+
+9. Documentation
 - Documentation is generated under http://localhost:8080/swagger-ui/index.html
 - To add custom descrtptions see example controller
 
