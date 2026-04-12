@@ -1503,8 +1503,8 @@
       }
     } ]
   },
-  "internationalizationEnabled" : false,
-  "supportedLocales" : [ ],
+  "internationalizationEnabled" : true,
+  "supportedLocales" : ["pl", "en"],
   "authenticationFlows" : [ {
     "id" : "fe0d47e1-a5c0-433e-b26c-b60e081e70f9",
     "alias" : "Account verification options",
