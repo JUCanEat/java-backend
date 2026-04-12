@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.ai.content.Media;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
@@ -23,7 +24,7 @@ import java.util.ArrayList;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Profile("!dev")
+@ConditionalOnProperty(name = "aiservice.mock-implementation-active", havingValue = "false")
 public class ProdAIService implements MenuAIService {
     private final ChatClient.Builder chatClientBuilder;
     private final DishRepository dishRepository;
