@@ -50,33 +50,10 @@ public class Dish {
     )
     private Set<Tag> tags = new HashSet<>();
 
-
-    @ManyToOne
-    private Restaurant restaurant;
-
     @ManyToMany(mappedBy = "dishes")
     private List<DailyMenu> dailyMenus = new ArrayList<>();
 
-    public void addTag(Tag tag) {
-        tags.add(tag);
-    }
-
-    public void removeTag(Tag tag) {
-        tags.remove(tag);
-    }
-
     public enum Category {
         SOUP, MAIN_COURSE
-    }
-
-    //legacy
-    @ElementCollection(targetClass = Allergens.class)
-    @Enumerated(EnumType.STRING)
-    @CollectionTable(name = "dish_allergens")
-    @Column(name = "allergen")
-    private Set<Allergens> allergens;
-
-    public enum Allergens {
-        NUTS, GLUTEN, MEAT, LACTOSE
     }
 }
