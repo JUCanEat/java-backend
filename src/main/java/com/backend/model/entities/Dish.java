@@ -56,6 +56,6 @@ public class Dish {
     }
 
     public enum Allergens {
-        NUTS, GLUTEN, MEAT, LACTOSE
+        NUTS, GLUTEN, MEAT, LACTOSE, SESAME
     }
 }
