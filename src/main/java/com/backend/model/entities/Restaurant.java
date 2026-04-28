@@ -71,4 +71,9 @@ public class Restaurant extends Facility {
                 .findFirst()
                 .orElse(null);
     }
+
+    public void setOpeningHours(List<OpeningHours> openingHours) {
+        this.openingHours.clear();
+        this.openingHours.addAll(openingHours);
+    }
 }
