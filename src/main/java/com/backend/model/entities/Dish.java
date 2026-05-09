@@ -50,6 +50,9 @@ public class Dish {
     )
     private Set<Tag> tags = new HashSet<>();
 
+    @ManyToOne
+    private Restaurant restaurant;
+
     @ManyToMany(mappedBy = "dishes")
     private List<DailyMenu> dailyMenus = new ArrayList<>();
 

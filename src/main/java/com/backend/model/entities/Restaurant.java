@@ -36,7 +36,7 @@ public class Restaurant extends Facility {
     private List<OpeningHours> openingHours;
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
-    private List<DailyMenu> dailyMenus = new ArrayList<>();
+    private Set<DailyMenu> dailyMenus = new HashSet<>();
     @ManyToMany
     @JoinTable(
             name = "restaurant_owners",

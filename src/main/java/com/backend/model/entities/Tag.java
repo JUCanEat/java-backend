@@ -29,6 +29,7 @@ public class Tag {
     private UUID id;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "tag_value", columnDefinition = "varchar(50)")
     private TagValue value;
 
     public TagType getTagType() {
@@ -43,24 +44,35 @@ public class Tag {
     @Getter
     public enum TagValue {
         // Cuisine
-        ITALIAN(TagType.CUISINE),
-        POLISH(TagType.CUISINE),
-        ASIAN(TagType.CUISINE),
-        FAST_FOOD(TagType.CUISINE),
+        ITALIAN(TagType.CUISINE, "Włoska", "Italian"),
+        POLISH(TagType.CUISINE, "Polska", "Polish"),
+        ASIAN(TagType.CUISINE, "Azjatycka", "Asian"),
+        FAST_FOOD(TagType.CUISINE, "Fast food", "Fast food"),
 
         // Allergen
-        NUTS(TagType.ALLERGEN),
-        GLUTEN(TagType.ALLERGEN),
-        LACTOSE(TagType.ALLERGEN),
+        NUTS(TagType.ALLERGEN, "Orzechy", "Nuts"),
+        GLUTEN(TagType.ALLERGEN, "Gluten", "Gluten"),
+        LACTOSE(TagType.ALLERGEN, "Laktoza", "Lactose"),
 
         // Dietary
-        VEGAN(TagType.DIETARY),
-        VEGETARIAN(TagType.DIETARY);
+        VEGAN(TagType.DIETARY, "Wegańskie", "Vegan"),
+        VEGETARIAN(TagType.DIETARY, "Wegetariańskie", "Vegetarian");
 
         private final TagType type;
+        private final String labelPl;
+        private final String labelEn;
 
-        TagValue(TagType type) {
+        TagValue(TagType type, String labelPl, String labelEn) {
             this.type = type;
+            this.labelPl = labelPl;
+            this.labelEn = labelEn;
+        }
+
+        public String getLabel(DishTranslation.Language language) {
+            return switch (language) {
+                case PL -> labelPl;
+                case EN -> labelEn;
+            };
         }
     }
 

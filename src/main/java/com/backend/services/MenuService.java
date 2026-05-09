@@ -247,7 +247,7 @@ public class MenuService {
                         dish.setCategory(Dish.Category.valueOf(dto.getCategory()));
                         dish.setName(dto.getName());
                         dish.setPrice(new Price(dto.getPrice(), "PLN"));
-                        dish.setAllergens(dto.getAllergens());
+                        dish.setTags(dto.getTags());
                                                 dishRepository.save(dish);
                                                 dishTranslationService.upsertBothLanguages(dish, dto.getName(), sourceLanguageHeader);
                         //aiservice.index(dish)
