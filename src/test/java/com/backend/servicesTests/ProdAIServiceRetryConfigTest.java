@@ -18,5 +18,8 @@ class ProdAIServiceRetryConfigTest {
 
         assertThat(retryable).isNotNull();
         assertThat(retryable.retryFor()).containsExactly(TransientAiException.class);
+        assertThat(retryable.maxAttempts()).isEqualTo(5);
+        assertThat(retryable.backoff().delay()).isEqualTo(1000L);
+        assertThat(retryable.backoff().multiplier()).isEqualTo(2.0);
     }
 }
