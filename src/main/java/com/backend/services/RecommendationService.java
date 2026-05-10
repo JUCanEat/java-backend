@@ -2,6 +2,7 @@ package com.backend.services;
 
 import com.backend.model.dtos.RankedRestaurantDTO;
 import com.backend.model.dtos.RestaurantListDTO;
+import com.backend.model.entities.DailyMenu;
 import com.backend.model.entities.Dish;
 import com.backend.model.entities.Restaurant;
 import com.backend.model.entities.Tag;
@@ -36,8 +37,6 @@ public class RecommendationService {
         List<Restaurant> restaurants =
                 restaurantRepository.findAllRestaurantsWithTodayMenu();
 
-        List<UserPreference> preferences = user.getPreferences();
-
         Set<Tag> include = new HashSet<>();
         Set<Tag> exclude = new HashSet<>();
 
@@ -61,6 +60,15 @@ public class RecommendationService {
     private double calculateScore(Restaurant restaurant,
                                   Set<Tag> include,
                                   Set<Tag> exclude) {
+
+        DailyMenu activeMenu = restaurant.getDailyMenus().stream()
+                .filter(dm -> dm.getStatus() == DailyMenu.Status.ACTIVE)
+                .findFirst()
+                .orElse(null);
+
+        if (activeMenu == null) {
+            return -Double.MAX_VALUE;
+        }
 
         List<Dish> dishes = restaurant.getTodayMenu().getDishes();
 

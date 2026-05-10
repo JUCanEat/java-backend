@@ -15,11 +15,10 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, UUID> {
     List<Restaurant> findAllByOwners_Id(String ownerId);
 
     @Query("""
-    SELECT DISTINCT r FROM Restaurant r
-    LEFT JOIN FETCH r.dailyMenus dm
-    LEFT JOIN FETCH dm.dishes d
-    LEFT JOIN FETCH d.tags
-    WHERE dm.status = 'ACTIVE'
+        SELECT DISTINCT r FROM Restaurant r
+        LEFT JOIN FETCH r.dailyMenus dm
+        LEFT JOIN FETCH dm.dishes d
+        LEFT JOIN FETCH d.tags
     """)
     List<Restaurant> findAllRestaurantsWithTodayMenu();
 }
