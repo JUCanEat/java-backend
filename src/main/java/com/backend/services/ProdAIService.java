@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.ai.content.Media;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.retry.TransientAiException;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
@@ -33,7 +34,7 @@ public class ProdAIService implements MenuAIService {
     private final DishRepository dishRepository;
 
     @Retryable(
-            retryFor = Exception.class,
+            retryFor = TransientAiException.class,
             maxAttempts = 5,
             backoff = @Backoff(delay = 1000, multiplier = 2)  // 1s, 2s, 4s, 8s
     )
