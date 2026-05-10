@@ -92,7 +92,7 @@ public class RecommendationService {
             boolean hasExcluded = false;
 
             for (Tag t : tags) {
-                if (exclude.contains(t)) {
+                if (exclude.contains(t) && t.getTagType()== Tag.TagType.ALLERGEN) {
                     hasExcluded = true;
                     allergenHits++;
                     break;
@@ -107,17 +107,17 @@ public class RecommendationService {
             // DIETARY / INCLUDE bonus
             // -------------------------
             for (Tag t : tags) {
-                if (include.contains(t)) {
+                if (include.contains(t) && t.getTagType() == Tag.TagType.DIETARY) {
                     score += 3;
                     hasDietaryMatch = true;
                 }
             }
 
             // -------------------------
-            // CUISINE bonus
+            // CUISINE/ALLERGEN bonus
             // -------------------------
             for (Tag t : tags) {
-                if (t.getTagType() == Tag.TagType.CUISINE && include.contains(t)) {
+                if ((t.getTagType() == Tag.TagType.CUISINE || t.getTagType() == Tag.TagType.ALLERGEN )&& include.contains(t)) {
                     score += 2;
                 }
             }
