@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,6 +23,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+//@EqualsAndHashCode(of = "id")
 public class Tag {
 
     @Id
@@ -53,6 +55,7 @@ public class Tag {
         NUTS(TagType.ALLERGEN, "Orzechy", "Nuts"),
         GLUTEN(TagType.ALLERGEN, "Gluten", "Gluten"),
         LACTOSE(TagType.ALLERGEN, "Laktoza", "Lactose"),
+        SESAME(TagType.ALLERGEN, "Sezam", "Sesame"),
 
         // Dietary
         VEGAN(TagType.DIETARY, "Wegańskie", "Vegan"),
