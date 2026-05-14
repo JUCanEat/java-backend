@@ -1,4 +1,4 @@
-ALTER TABLE dish_allergens
+LTER TABLE dish_allergens
     DROP CONSTRAINT IF EXISTS dish_allergens_allergen_check;
 
 ALTER TABLE dish_allergens
