@@ -141,45 +141,60 @@ INSERT INTO daily_menu_dishes (daily_menu_id, dish_id) VALUES
 ('c5555555-aaaa-bbbb-cccc-555555555555', 'd5555555-aaaa-bbbb-cccc-000000000003');
 
 ------------------------------------------------------------
--- DISH ALLERGENS
+-- DISH TAGS
 ------------------------------------------------------------
 
--- Bistro Świetlica allergens
-INSERT INTO dish_allergens (dish_id, allergen) VALUES
-('d1111111-aaaa-bbbb-cccc-000000000001', 'GLUTEN'),    -- Potato Dumplings (contains flour)
-('d1111111-aaaa-bbbb-cccc-000000000001', 'LACTOSE'),   -- Potato Dumplings (may contain dairy)
-('d1111111-aaaa-bbbb-cccc-000000000002', 'LACTOSE');   -- Red Beet Soup (may contain sour cream)
+INSERT INTO tags (id, tag_value) VALUES
+    -- Cuisine
+    ('a0000000-0000-0000-0000-000000000001', 'ITALIAN'),
+    ('a0000000-0000-0000-0000-000000000002', 'POLISH'),
+    ('a0000000-0000-0000-0000-000000000003', 'ASIAN'),
+    ('a0000000-0000-0000-0000-000000000004', 'FAST_FOOD'),
+
+    -- Allergen
+    ('a0000000-0000-0000-0000-000000000005', 'NUTS'),
+    ('a0000000-0000-0000-0000-000000000006', 'GLUTEN'),
+    ('a0000000-0000-0000-0000-000000000007', 'LACTOSE'),
+    ('a0000000-0000-0000-0000-000000000010', 'SESAME'),
+
+    -- Dietary
+    ('a0000000-0000-0000-0000-000000000008', 'VEGAN'),
+    ('a0000000-0000-0000-0000-000000000009', 'VEGETARIAN');
+
+-- Bistro Świetlica tags
+INSERT INTO dish_tags (dish_id, tag_id) VALUES
+('d1111111-aaaa-bbbb-cccc-000000000001', 'a0000000-0000-0000-0000-000000000006'),    -- Potato Dumplings (contains flour)
+('d1111111-aaaa-bbbb-cccc-000000000001', 'a0000000-0000-0000-0000-000000000007'),   -- Potato Dumplings (may contain dairy)
+('d1111111-aaaa-bbbb-cccc-000000000002', 'a0000000-0000-0000-0000-000000000007');   -- Red Beet Soup (may contain sour cream)
 -- Pumpkin Cream Soup has no major allergens in this list
 
--- Bistro by Jelonek allergens
-INSERT INTO dish_allergens (dish_id, allergen) VALUES
-('d2222222-aaaa-bbbb-cccc-000000000001', 'GLUTEN'),    -- Chicken Teriyaki Bowl (contains soy sauce)
-('d2222222-aaaa-bbbb-cccc-000000000001', 'MEAT'),      -- Chicken Teriyaki Bowl (contains chicken)
-('d2222222-aaaa-bbbb-cccc-000000000002', 'GLUTEN'),    -- Miso Soup (contains miso paste)
-('d2222222-aaaa-bbbb-cccc-000000000003', 'MEAT');      -- Salmon Rice Bowl (contains fish/meat)
+-- Bistro by Jelonek tags
+INSERT INTO dish_tags (dish_id, tag_id) VALUES
+('d2222222-aaaa-bbbb-cccc-000000000001', 'a0000000-0000-0000-0000-000000000006'),    -- Chicken Teriyaki Bowl (contains soy sauce)
+('d2222222-aaaa-bbbb-cccc-000000000001', 'a0000000-0000-0000-0000-000000000003'),      -- Chicken Teriyaki Bowl (Asian))
+('d2222222-aaaa-bbbb-cccc-000000000002', 'a0000000-0000-0000-0000-000000000006'),    -- Miso Soup (contains miso paste)
+('d2222222-aaaa-bbbb-cccc-000000000002', 'a0000000-0000-0000-0000-000000000003'),    -- Miso Soup (Asian)
+('d2222222-aaaa-bbbb-cccc-000000000003', 'a0000000-0000-0000-0000-000000000003');      -- Salmon Rice Bowl (Asian)
 
--- Bistro4mat allergens
-INSERT INTO dish_allergens (dish_id, allergen) VALUES
-('d3333333-aaaa-bbbb-cccc-000000000001', 'GLUTEN'),    -- Chicken Wrap (contains tortilla)
-('d3333333-aaaa-bbbb-cccc-000000000001', 'MEAT'),      -- Chicken Wrap (contains chicken)
-('d3333333-aaaa-bbbb-cccc-000000000001', 'LACTOSE'),   -- Chicken Wrap (may contain cheese/sauce)
-('d3333333-aaaa-bbbb-cccc-000000000002', 'LACTOSE'),   -- Tomato Cream Soup (contains cream)
-('d3333333-aaaa-bbbb-cccc-000000000003', 'LACTOSE');   -- Greek Salad (contains feta cheese)
+-- Bistro4mat tags
+INSERT INTO dish_tags (dish_id, tag_id) VALUES
+('d3333333-aaaa-bbbb-cccc-000000000001', 'a0000000-0000-0000-0000-000000000006'),    -- Chicken Wrap (contains tortilla)
+('d3333333-aaaa-bbbb-cccc-000000000001', 'a0000000-0000-0000-0000-000000000007'),   -- Chicken Wrap (may contain cheese/sauce)
+('d3333333-aaaa-bbbb-cccc-000000000002', 'a0000000-0000-0000-0000-000000000007'),   -- Tomato Cream Soup (contains cream)
+('d3333333-aaaa-bbbb-cccc-000000000003', 'a0000000-0000-0000-0000-000000000007');   -- Greek Salad (contains feta cheese)
 
--- Bistro 11 allergens
-INSERT INTO dish_allergens (dish_id, allergen) VALUES
-('d4444444-aaaa-bbbb-cccc-000000000001', 'MEAT'),      -- Pork Chop (contains pork)
-('d4444444-aaaa-bbbb-cccc-000000000002', 'MEAT');      -- Chicken Broth Soup (contains chicken)
--- Boiled Potatoes have no major allergens in this list
+-- Bistro 11 tags
+INSERT INTO dish_tags (dish_id, tag_id) VALUES
+('d4444444-aaaa-bbbb-cccc-000000000003', 'a0000000-0000-0000-0000-000000000008'),      -- Boiled Potatoes (Vegan)
+('d4444444-aaaa-bbbb-cccc-000000000003', 'a0000000-0000-0000-0000-000000000009');      -- Boiled Potatoes (Vegetarian)
 
--- Neon Bistro allergens
-INSERT INTO dish_allergens (dish_id, allergen) VALUES
-('d5555555-aaaa-bbbb-cccc-000000000001', 'GLUTEN'),    -- Caesar Salad (contains croutons)
-('d5555555-aaaa-bbbb-cccc-000000000001', 'LACTOSE'),   -- Caesar Salad (contains parmesan cheese)
-('d5555555-aaaa-bbbb-cccc-000000000001', 'MEAT'),      -- Caesar Salad (usually contains chicken)
-('d5555555-aaaa-bbbb-cccc-000000000002', 'LACTOSE'),   -- Broccoli Cream Soup (contains cream)
-('d5555555-aaaa-bbbb-cccc-000000000003', 'MEAT'),      -- Tuna Roll (contains fish/meat)
-('d5555555-aaaa-bbbb-cccc-000000000003', 'GLUTEN');    -- Tuna Roll (may contain soy sauce or tempura)
+-- Neon Bistro tags
+INSERT INTO dish_tags (dish_id, tag_id) VALUES
+('d5555555-aaaa-bbbb-cccc-000000000001', 'a0000000-0000-0000-0000-000000000006'),    -- Caesar Salad (contains croutons)
+('d5555555-aaaa-bbbb-cccc-000000000001', 'a0000000-0000-0000-0000-000000000007'),   -- Caesar Salad (contains parmesan cheese)
+('d5555555-aaaa-bbbb-cccc-000000000002', 'a0000000-0000-0000-0000-000000000007'),   -- Broccoli Cream Soup (contains cream)
+('d5555555-aaaa-bbbb-cccc-000000000003', 'a0000000-0000-0000-0000-000000000003'),      -- Tuna Roll (Asian)
+('d5555555-aaaa-bbbb-cccc-000000000003', 'a0000000-0000-0000-0000-000000000006');    -- Tuna Roll (may contain soy sauce or tempura)
 
 ------------------------------------------------------------
 -- VENDING MACHINES' LOCATIONS (might require more detailed in person mapping)
@@ -274,11 +289,10 @@ VALUES (
            'eeeeeeee-1111-1111-1111-eeeeeeeeeeee'
        );
 
-INSERT INTO dish_allergens (dish_id, allergen)
+INSERT INTO dish_tags (dish_id, tag_id)
 VALUES
-    ('eeeeeeee-1111-1111-1111-eeeeeeeeeeee', 'GLUTEN'),
-    ('eeeeeeee-1111-1111-1111-eeeeeeeeeeee', 'LACTOSE'),
-    ('eeeeeeee-1111-1111-1111-eeeeeeeeeeee', 'MEAT');
+    ('eeeeeeee-1111-1111-1111-eeeeeeeeeeee', 'a0000000-0000-0000-0000-000000000006'), --gluten
+    ('eeeeeeee-1111-1111-1111-eeeeeeeeeeee', 'a0000000-0000-0000-0000-000000000007'); --lactose
 
 INSERT INTO restaurant_owners (restaurant_id, user_id)
 VALUES (

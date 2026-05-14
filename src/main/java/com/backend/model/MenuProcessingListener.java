@@ -47,7 +47,6 @@ public class MenuProcessingListener {
                 throw new RuntimeException("No items parsed from image");
             }
 
-            parsedItems.forEach(dish -> dish.setRestaurant(menu.getRestaurant()));
             menu.setDishes(new ArrayList<>(parsedItems));
             menu.setStatus(DailyMenu.Status.DRAFT);
             //menu.setProcessedAt(LocalDateTime.now()); do audit logów?
