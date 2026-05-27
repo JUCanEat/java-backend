@@ -1,11 +1,15 @@
 package com.backend.controllers;
 
+import com.backend.model.dtos.PreferenceRequest;
+import com.backend.model.dtos.UpdatePreferencesRequest;
+import com.backend.model.dtos.UserPreferenceDTO;
 import com.backend.model.dtos.UserProfileDTO;
 import com.backend.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,10 +18,12 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -85,6 +91,19 @@ public class UserController {
     ) {
         userService.removeFromFavourites(jwt, facilityId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<List<UserPreferenceDTO>> getPreferences(@AuthenticationPrincipal Jwt jwt) {
+        return ResponseEntity.ok(userService.getPreferences(jwt));
+    }
+
+
+    @PostMapping("/preferences")
+    public void addPreference(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestBody @Valid UpdatePreferencesRequest request) {
+        userService.updatePreferences(jwt, request);
     }
 
 }

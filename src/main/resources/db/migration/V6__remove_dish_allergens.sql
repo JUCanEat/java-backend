@@ -1,0 +1,2 @@
+ALTER TABLE dish DROP CONSTRAINT IF EXISTS FKm9q52lhbluv5a316ehhmhb57u;
+DROP TABLE dish_allergens;
