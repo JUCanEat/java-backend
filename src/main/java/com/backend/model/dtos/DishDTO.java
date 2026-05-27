@@ -1,7 +1,6 @@
 package com.backend.model.dtos;
 
 import com.backend.model.entities.Dish;
-import com.backend.model.entities.Tag;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,13 +17,13 @@ public class DishDTO {
     private String name;
     private String category;
     private BigDecimal price;
-    private Set<Tag> tags;
+    private Set<Dish.Allergens> allergens;
 
     public DishDTO(Dish dish) {
         this.id = dish.getId();
         this.name = dish.getName();
         this.category = dish.getCategory().name();
         this.price = dish.getPrice().getAmount();
-        this.tags = dish.getTags();
+        this.allergens = dish.getAllergens();
     }
 }

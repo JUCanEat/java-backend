@@ -84,7 +84,7 @@ class RestaurantServiceTest {
         dailyMenu.setId(UUID.randomUUID());
         dailyMenu.setStatus(DailyMenu.Status.ACTIVE);
 
-        Set<DailyMenu> dailyMenus = new HashSet<>();
+        List<DailyMenu> dailyMenus = new ArrayList<>();
         dailyMenus.add(dailyMenu);
         restaurant.setDailyMenus(dailyMenus);
 

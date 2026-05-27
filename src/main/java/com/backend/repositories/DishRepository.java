@@ -11,4 +11,5 @@ import java.util.UUID;
 
 @Repository
 public interface DishRepository extends JpaRepository<Dish, UUID> {
+    Optional<List<Dish>> findByRestaurantId(UUID id);
 }
