@@ -58,7 +58,7 @@ class MenuProcessingListenerTest {
         Dish parsedDish = new Dish();
         parsedDish.setName("Tomato soup");
         parsedDish.setCategory(Dish.Category.SOUP);
-        parsedDish.setTags(Set.of());
+        parsedDish.setAllergens(Set.of());
 
         MessageDTO message = new MessageDTO(menuId, restaurantId, LocalDate.now(), new byte[] {1, 2, 3}, "menu.jpg", "owner-1");
 

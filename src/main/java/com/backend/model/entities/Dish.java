@@ -11,8 +11,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -21,7 +19,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -42,13 +39,11 @@ public class Dish {
     private Price price;
 
 
-    @ManyToMany
-    @JoinTable(
-            name = "dish_tags",
-            joinColumns = @JoinColumn(name = "dish_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
-    private Set<Tag> tags = new HashSet<>();
+    @ElementCollection(targetClass = Allergens.class)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(name = "dish_allergens")
+    @Column(name = "allergen")
+    private Set<Allergens> allergens;
 
     @ManyToOne
     private Restaurant restaurant;
@@ -58,5 +53,9 @@ public class Dish {
 
     public enum Category {
         SOUP, MAIN_COURSE
+    }
+
+    public enum Allergens {
+        NUTS, GLUTEN, MEAT, LACTOSE, SESAME
     }
 }

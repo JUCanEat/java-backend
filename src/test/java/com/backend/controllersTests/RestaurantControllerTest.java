@@ -4,7 +4,6 @@ import com.backend.controllers.RestaurantController;
 import com.backend.filters.SaveUserFilter;
 import com.backend.model.dtos.RestaurantDetailsDTO;
 import com.backend.model.entities.Restaurant;
-import com.backend.services.RecommendationService;
 import com.backend.services.RestaurantService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,9 +38,6 @@ class RestaurantControllerTest {
     private MockMvc mockMvc;
     @MockitoBean
     private RestaurantService restaurantService;
-
-    @MockitoBean
-    private RecommendationService recommendationService;
 
     @Test
     void shouldReturnRestaurantById() throws Exception {

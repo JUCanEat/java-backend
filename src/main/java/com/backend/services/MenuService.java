@@ -5,10 +5,8 @@ import com.backend.model.dtos.DailyMenuDTO;
 import com.backend.model.dtos.LocalizedDailyMenuDTO;
 import com.backend.model.dtos.LocalizedDishDTO;
 import com.backend.model.dtos.MessageDTO;
-import com.backend.model.dtos.TagDTO;
 import com.backend.model.entities.DailyMenu;
 import com.backend.model.entities.Dish;
-import com.backend.model.entities.DishTranslation;
 import com.backend.model.entities.Restaurant;
 import com.backend.model.valueObjects.Price;
 import com.backend.repositories.DailyMenuRepository;
@@ -67,14 +65,7 @@ public class MenuService {
                 .map(dish -> new LocalizedDishDTO(
                         dish,
                         localizedNames.getOrDefault(dish.getId(), dish.getName()),
-                        dish.getPrice(),
-                        dish.getTags().stream()
-                                .map(tag -> new TagDTO(
-                                        tag.getValue(),
-                                        tag.getTagType(),
-                                        tag.getValue().getLabel(DishTranslation.Language.valueOf(language))
-                                ))
-                                .collect(Collectors.toSet())
+                        dish.getPrice()
                 ))
                 .collect(Collectors.toList());
 
@@ -131,14 +122,7 @@ public class MenuService {
                                 .map(dish -> new LocalizedDishDTO(
                                         dish,
                                         localizedNames.getOrDefault(dish.getId(), dish.getName()),
-                                        dish.getPrice(),
-                                        dish.getTags().stream()
-                                                .map(tag -> new TagDTO(
-                                                        tag.getValue(),
-                                                        tag.getTagType(),
-                                                        tag.getValue().getLabel(DishTranslation.Language.valueOf(language))
-                                                ))
-                                                .collect(Collectors.toSet())
+                                        dish.getPrice()
                                 ))
                                 .collect(Collectors.toList())
                 ))
@@ -263,7 +247,7 @@ public class MenuService {
                         dish.setCategory(Dish.Category.valueOf(dto.getCategory()));
                         dish.setName(dto.getName());
                         dish.setPrice(new Price(dto.getPrice(), "PLN"));
-                        dish.setTags(dto.getTags());
+                        dish.setAllergens(dto.getAllergens());
                                                 dishRepository.save(dish);
                                                 dishTranslationService.upsertBothLanguages(dish, dto.getName(), sourceLanguageHeader);
                         //aiservice.index(dish)
