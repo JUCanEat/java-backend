@@ -47,19 +47,6 @@ public class RestaurantController {
     private final RecommendationService recommendationService;
 
     @Operation(
-            summary = "Get all restaurants",
-            description = "Retrieves a list of all available restaurants in the system."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved the list of restaurants")
-    })
-    @GetMapping
-    public ResponseEntity<List<RestaurantListDTO>> getAllRestaurants() {
-        List<RestaurantListDTO> restaurants = restaurantService.getAllRestaurants();
-        return ResponseEntity.ok(restaurants);
-    }
-
-    @Operation(
             summary = "Get all restaurants with ranks",
             description = "Retrieves a list of all available restaurants in the system including user based ranking."
     )
@@ -71,6 +58,19 @@ public class RestaurantController {
             @AuthenticationPrincipal Jwt jwt) {
         String userId = jwt != null ? jwt.getSubject() : null;
         List<RankedRestaurantDTO> restaurants = recommendationService.getRankedRestaurants(userId);
+        return ResponseEntity.ok(restaurants);
+    }
+
+    @Operation(
+            summary = "Get all restaurants",
+            description = "Retrieves a list of all available restaurants in the system."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved the list of restaurants")
+    })
+    @GetMapping
+    public ResponseEntity<List<RestaurantListDTO>> getAllRestaurants() {
+        List<RestaurantListDTO> restaurants = restaurantService.getAllRestaurants();
         return ResponseEntity.ok(restaurants);
     }
 
