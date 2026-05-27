@@ -53,7 +53,7 @@ public class RestaurantController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved the list of restaurants")
     })
-    @GetMapping("/recommendation")
+    @GetMapping("/me/recommendation")
     public ResponseEntity<List<RankedRestaurantDTO>> getAllRestaurantsWithRecommendations(
             @AuthenticationPrincipal Jwt jwt) {
         String userId = jwt != null ? jwt.getSubject() : null;
@@ -82,7 +82,7 @@ public class RestaurantController {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved restaurant details"),
             @ApiResponse(responseCode = "404", description = "Restaurant not found")
     })
-    @GetMapping("@GetMapping(\"/{id:[0-9a-fA-F-]{36}}\")")
+    @GetMapping("/{id}")
     public ResponseEntity<RestaurantDetailsDTO> getRestaurantById(
             @Parameter(description = "Id of the restaurant", required = true)
             @PathVariable UUID id) {
