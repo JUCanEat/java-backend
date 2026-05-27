@@ -82,7 +82,7 @@ public class RestaurantController {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved restaurant details"),
             @ApiResponse(responseCode = "404", description = "Restaurant not found")
     })
-    @GetMapping("/{id}")
+    @GetMapping("@GetMapping(\"/{id:[0-9a-fA-F-]{36}}\")")
     public ResponseEntity<RestaurantDetailsDTO> getRestaurantById(
             @Parameter(description = "Id of the restaurant", required = true)
             @PathVariable UUID id) {
