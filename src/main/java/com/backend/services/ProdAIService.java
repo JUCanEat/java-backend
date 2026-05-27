@@ -2,8 +2,10 @@ package com.backend.services;
 
 import com.backend.model.dtos.AIDishDTO;
 import com.backend.model.entities.Dish;
+import com.backend.model.entities.Tag;
 import com.backend.model.valueObjects.Price;
 import com.backend.repositories.DishRepository;
+import com.backend.repositories.TagRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,8 +20,12 @@ import org.springframework.util.MimeTypeUtils;
 
 import org.springframework.ai.chat.client.ChatClient;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +34,7 @@ import java.util.ArrayList;
 public class ProdAIService implements MenuAIService {
     private final ChatClient.Builder chatClientBuilder;
     private final DishRepository dishRepository;
+    private final TagRepository tagRepository;
 
 
     public List<Dish> parseMenuFromImage(byte[] imageBytes) {
@@ -42,6 +49,8 @@ public class ProdAIService implements MenuAIService {
             2. category: Either "SOUP" or "MAIN_COURSE" (string, required)
             3. price: Numeric value with 2 decimal places (number, required)
             4. allergens: Array of allergen codes (array, can be empty)
+            5. cuisines: Array of cuisine types (array, can be empty)
+            6. dietary: Array of dietary types (array, can be empty)
             
             CATEGORY RULES (choose one):
             - "SOUP": zupy, rosół, barszcz, krem, chłodnik, zupa, bulion, consommé
@@ -53,13 +62,52 @@ public class ProdAIService implements MenuAIService {
             - If price is unclear or missing: use 0.00
             - Remove any currency symbols (zł, PLN)
             
-            ALLERGEN CODES (use exact strings):
-            - "MEAT": kurczak, wołowina, wieprzowina, schabowy, kotlet, ryba, łosoś, krewetki, etc.
+            ALLOWED TAG VALUES (STRICT - use ONLY these exact strings):
+                        
+            ALLERGENS:
+            - "GLUTEN"
+            - "LACTOSE"
+            - "NUTS"
+                        
+            CUISINES:
+            - "ITALIAN"
+            - "POLISH"
+            - "ASIAN"
+            - "FAST_FOOD"
+                        
+            DIETARY:
+            - "VEGAN"
+            - "VEGETARIAN"
+            
+            TAGGING RULES:
+            - Use ONLY values from the lists above (no variations, no translations)
+            - If unsure → return empty array []
+            - Prefer empty array [] over incorrect tag
+            - Do NOT invent new tags
+            - Do NOT mix categories (e.g. GLUTEN must NOT appear in cuisines)
+            - Try to always pick a cuisine
+                        
+            ALLERGEN HINTS:
             - "GLUTEN": makaron, spaghetti, pierogi, kluski, panierowany, w panierce, pieczywo
             - "LACTOSE": ser, śmietana, kremowy, mleko, masło, parmezan, mozzarella
             - "NUTS": orzechy, migdały, orzeszki, pistacje
-            
-            Use empty array [] if no allergens apply.
+                        
+            CUISINE HINTS:
+            - "POLISH": schabowy, pierogi, rosół, bigos
+            - "ITALIAN": pizza, spaghetti, pasta, makaron
+            - "ASIAN": curry, ramen, sushi, stir-fry, noodles
+            - "FAST_FOOD": burger, frytki, hot-dog
+                        
+            DIETARY HINTS:
+            - "VEGAN": Use ONLY if the dish contains NO animal products.
+                 This means:
+                 - NO meat (kurczak, wołowina, wieprzowina, ryba, etc.)
+                 - NO dairy (ser, mleko, śmietana, masło)
+                 - NO eggs
+                 If there is ANY doubt → do NOT assign.
+            - "VEGETARIAN": Use if the dish contains NO meat or fish, but MAY contain dairy or eggs.
+                  Examples: dishes with cheese, cream, or eggs are vegetarian but NOT vegan.
+                  If meat or fish is present → DO NOT assign.
             
             EXAMPLES OF EXPECTED OUTPUT:
             [
@@ -126,8 +174,58 @@ public class ProdAIService implements MenuAIService {
         dish.setName(dto.getName());
         dish.setCategory(Dish.Category.valueOf(dto.getCategory()));
         dish.setPrice(new Price(dto.getPrice(), "PLN"));
-        dish.setAllergens(dto.getAllergens());
+
+        Set<Tag> tags = new HashSet<>();
+
+        // CUISINE
+        if (dto.getCuisines() != null) {
+            tags.addAll(mapTags(dto.getCuisines(),Tag.TagType.CUISINE));
+        }
+
+        // ALLERGENS
+        if (dto.getAllergens() != null) {
+            tags.addAll(mapTags(dto.getAllergens(), Tag.TagType.ALLERGEN));
+        }
+
+        // DIETARY
+        if (dto.getDietary() != null) {
+            tags.addAll(mapTags(dto.getDietary(), Tag.TagType.DIETARY));
+        }
+
+        dish.setTags(tags);
+
         return dish;
+    }
+
+    private Set<Tag> mapTags(Set<String> values, Tag.TagType expectedType) {
+        if (values == null || values.isEmpty()) {
+            return Set.of();
+        }
+
+        return values.stream()
+                .map(v -> {
+                    try {
+                        Tag.TagValue enumValue = Tag.TagValue.valueOf(v);
+
+                        if (enumValue.getType() != expectedType) {
+                            log.warn("LLM returned wrong tag type: {} (expected: {}, actual: {})",
+                                    v, expectedType, enumValue.getType());
+                            return null;
+                        }
+
+                        return tagRepository.findByValue(enumValue)
+                                .orElseGet(() -> {
+                                    log.warn("Tag not found in DB (skipping): {}", v);
+                                    return null;
+                                });
+
+                    } catch (IllegalArgumentException e) {
+                        log.warn("Invalid tag from LLM (skipping): {}", v);
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
     }
 }
 
