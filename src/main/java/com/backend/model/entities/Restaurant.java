@@ -36,6 +36,9 @@ public class Restaurant extends Facility {
     private List<OpeningHours> openingHours = new ArrayList<>();
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
+    private List<Dish> dishes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
     private Set<DailyMenu> dailyMenus = new HashSet<>();
     @ManyToMany
     @JoinTable(
