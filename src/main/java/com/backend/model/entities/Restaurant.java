@@ -33,7 +33,7 @@ import java.util.Set;
 public class Restaurant extends Facility {
     private String name;
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OpeningHours> openingHours;
+    private List<OpeningHours> openingHours = new ArrayList<>();
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
     private List<Dish> dishes = new ArrayList<>();
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
