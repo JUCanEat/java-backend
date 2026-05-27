@@ -6,7 +6,6 @@ import com.backend.model.dtos.MessageDTO;
 import com.backend.model.entities.DailyMenu;
 import com.backend.model.entities.Dish;
 import com.backend.model.entities.Restaurant;
-import com.backend.model.entities.Tag;
 import com.backend.model.entities.User;
 import com.backend.repositories.DailyMenuRepository;
 import com.backend.repositories.DishRepository;
@@ -247,7 +246,7 @@ class MenuServiceTest {
         dishDTO.setName("Pizza");
         dishDTO.setCategory("MAIN_COURSE");
         dishDTO.setPrice(BigDecimal.valueOf(25.0));
-        dishDTO.setTags(Set.of());
+        dishDTO.setAllergens(Set.of(Dish.Allergens.GLUTEN));
 
         DailyMenuDTO request = new DailyMenuDTO();
         request.setDate(LocalDate.now());
@@ -290,10 +289,7 @@ class MenuServiceTest {
         dishDTO.setName("Pizza");
         dishDTO.setCategory("MAIN_COURSE");
         dishDTO.setPrice(BigDecimal.valueOf(25.0));
-
-        Tag gluten = new Tag();
-        gluten.setValue(Tag.TagValue.GLUTEN);
-        dishDTO.setTags(Set.of(gluten));
+        dishDTO.setAllergens(Set.of(Dish.Allergens.GLUTEN));
 
         DailyMenuDTO request = new DailyMenuDTO();
         request.setDate(LocalDate.now());
@@ -380,7 +376,7 @@ class MenuServiceTest {
         dishDTO.setName("Soup");
         dishDTO.setCategory("SOUP");
         dishDTO.setPrice(BigDecimal.valueOf(19.0));
-        dishDTO.setTags(Set.of());
+        dishDTO.setAllergens(Set.of());
 
         DailyMenuDTO request = new DailyMenuDTO();
         request.setDate(futureDate);
@@ -422,11 +418,7 @@ class MenuServiceTest {
         dishDTO.setName("Edited Pizza");
         dishDTO.setCategory("MAIN_COURSE");
         dishDTO.setPrice(BigDecimal.valueOf(31.0));
-
-        Tag gluten = new Tag();
-        gluten.setValue(Tag.TagValue.GLUTEN);
-
-        dishDTO.setTags(Set.of(gluten));
+        dishDTO.setAllergens(Set.of(Dish.Allergens.GLUTEN));
 
         DailyMenuDTO request = new DailyMenuDTO();
         request.setId(menuId);
