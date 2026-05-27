@@ -1,10 +1,12 @@
 package com.backend.controllers;
 
 import com.backend.model.dtos.CreateRestaurantRequest;
+import com.backend.model.dtos.RankedRestaurantDTO;
 import com.backend.model.dtos.RestaurantDetailsDTO;
 import com.backend.model.dtos.RestaurantListDTO;
 import com.backend.model.dtos.UpdateRestaurantRequest;
 import com.backend.model.entities.Restaurant;
+import com.backend.services.RecommendationService;
 import com.backend.services.RestaurantService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -42,6 +44,7 @@ import java.util.UUID;
 public class RestaurantController {
 
     private final RestaurantService restaurantService;
+    private final RecommendationService recommendationService;
 
     @Operation(
             summary = "Get all restaurants",
@@ -53,6 +56,21 @@ public class RestaurantController {
     @GetMapping
     public ResponseEntity<List<RestaurantListDTO>> getAllRestaurants() {
         List<RestaurantListDTO> restaurants = restaurantService.getAllRestaurants();
+        return ResponseEntity.ok(restaurants);
+    }
+
+    @Operation(
+            summary = "Get all restaurants with ranks",
+            description = "Retrieves a list of all available restaurants in the system including user based ranking."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved the list of restaurants")
+    })
+    @GetMapping("/recommendation")
+    public ResponseEntity<List<RankedRestaurantDTO>> getAllRestaurantsWithRecommendations(
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt != null ? jwt.getSubject() : null;
+        List<RankedRestaurantDTO> restaurants = recommendationService.getRankedRestaurants(userId);
         return ResponseEntity.ok(restaurants);
     }
 
